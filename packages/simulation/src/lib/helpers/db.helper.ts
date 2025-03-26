@@ -167,16 +167,10 @@ export const dbHelper = {
           },
         })),
         chats: agentChats.map((chat) => {
-          const lastMessage = chat.messages[chat.messages.length - 1];
-
-          // A message is unread if:
-          // 1. There is a last message
-          // 2. The last message is from the counterpart
-          // 3. The current agent hasn't read the chat yet
           const hasUnreadMessage =
-            lastMessage &&
-            lastMessage.authorId !== agentId &&
-            chat.lastReadBy !== agentId;
+            chat.messages.length > 0 &&
+            chat.messages[chat.messages.length - 1].authorId ===
+              chat.providerId;
 
           return {
             id: chat.id,
@@ -186,21 +180,14 @@ export const dbHelper = {
             createdAt: chat.createdAt.toISOString(),
             notification: hasUnreadMessage
               ? {
-                  type: 'UNREAD_MESSAGES',
-                  message: `You have a new message from ${chat.clientId === agentId ? chat.providerId : chat.clientId}`,
-                  count: 1,
+                  type: 'UNREAD_MESSAGES' as const,
+                  message: 'You have unread messages',
                 }
               : {
-                  type: 'NONE',
+                  type: 'NONE' as const,
+                  message: '',
                 },
-            lastMessage: lastMessage
-              ? {
-                  id: lastMessage.id,
-                  authorId: lastMessage.authorId,
-                  message: lastMessage.message,
-                }
-              : undefined,
-            lastReadBy: chat.lastReadBy,
+            lastReadBy: chat.lastReadBy ?? undefined,
           };
         }),
       };

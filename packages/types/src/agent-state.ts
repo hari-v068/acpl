@@ -51,28 +51,10 @@ export const AgentStateSchema = z.object({
       counterpartId: z.string(),
       createdAt: z.string(),
       notification: z.object({
-        type: z.enum(['UNREAD_MESSAGES', 'NONE']),
-        message: z.string().optional(),
-        count: z.number().optional(),
+        type: z.enum(['NONE', 'UNREAD_MESSAGES']),
+        message: z.string(),
       }),
-      lastMessage: z
-        .object({
-          id: z.string(),
-          authorId: z.string(),
-          message: z.string(),
-        })
-        .optional(),
-      lastReadBy: z.string().nullable(),
-      messages: z
-        .array(
-          z.object({
-            id: z.string(),
-            authorId: z.string(),
-            message: z.string(),
-            createdAt: z.string(),
-          }),
-        )
-        .optional(),
+      lastReadBy: z.string().optional(),
     }),
   ),
 });
