@@ -1,0 +1,14 @@
+{
+  "name": "@acpl/config",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./env": "./src/env.ts"
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  }
+}
