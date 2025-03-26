@@ -15,7 +15,7 @@ export const gameHelper = {
     create: (agentConfig: AgentConfig & { agentId: string }) => {
       // Register the agent with complete details
       fetch(`${env.FIREBASE_URL}/agents/${agentConfig.agentId}.json`, {
-      method: 'PUT',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
