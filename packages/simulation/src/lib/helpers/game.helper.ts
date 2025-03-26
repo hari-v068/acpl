@@ -8,7 +8,13 @@ import {
 } from '@/lib/utils/log.utils';
 import { env } from '@acpl/config/env';
 import type { Log } from '@acpl/types';
-import { GameAgent, GameFunction, GameWorker } from '@virtuals-protocol/game';
+import {
+  ExecutableGameFunctionResponse,
+  ExecutableGameFunctionStatus,
+  GameAgent,
+  GameFunction,
+  GameWorker,
+} from '@virtuals-protocol/game';
 
 export const gameHelper = {
   agent: {
@@ -219,6 +225,20 @@ export const gameHelper = {
           return await baseFunction.executable({ ...args, agentId }, logger);
         },
       });
+    },
+    response: {
+      success: (message: string, metadata?: Record<string, unknown>) => {
+        return new ExecutableGameFunctionResponse(
+          ExecutableGameFunctionStatus.Done,
+          JSON.stringify({ message, metadata }),
+        );
+      },
+      failed: (message: string, metadata?: Record<string, unknown>) => {
+        return new ExecutableGameFunctionResponse(
+          ExecutableGameFunctionStatus.Failed,
+          JSON.stringify({ message, metadata }),
+        );
+      },
     },
   },
 };

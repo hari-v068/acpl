@@ -1,5 +1,5 @@
+import { dbHelper } from '@/lib/helpers/db.helper';
 import { gameHelper } from '@/lib/helpers/game.helper';
-import { response } from '@/lib/utils/game.utils';
 import {
   chatQueries,
   jobItemQueries,
@@ -9,7 +9,6 @@ import {
 } from '@acpl/db/queries';
 import { GameFunction } from '@virtuals-protocol/game';
 import { z } from 'zod';
-import { dbHelper } from '@/lib/helpers/db.helper';
 
 const PayArgsSchema = z.object({
   jobId: z.string().min(1, 'Job ID is required'),
@@ -45,7 +44,9 @@ export const pay = new GameFunction({
 
     const parseResult = PayArgsSchema.safeParse(args);
     if (!parseResult.success) {
-      return response.failed(parseResult.error.issues[0].message);
+      return gameHelper.function.response.failed(
+        parseResult.error.issues[0].message,
+      );
     }
 
     const { jobId, transactionHash, message } = parseResult.data;
@@ -53,7 +54,7 @@ export const pay = new GameFunction({
     try {
       const chatRead = await dbHelper.utils.verifyChatRead(jobId, clientId);
       if (!chatRead) {
-        return response.failed(
+        return gameHelper.function.response.failed(
           'You must read all messages before taking this action. Use the read function first.',
         );
       }
@@ -61,28 +62,34 @@ export const pay = new GameFunction({
       // Get job details
       const job = await jobQueries.getById(jobId);
       if (!job) {
-        return response.failed('Job not found');
+        return gameHelper.function.response.failed('Job not found');
       }
 
       // Verify this is the client paying
       if (job.clientId !== clientId) {
-        return response.failed('Only the client can pay for this job');
+        return gameHelper.function.response.failed(
+          'Only the client can pay for this job',
+        );
       }
 
       // Must be in TRANSACTION phase
       if (job.phase !== 'TRANSACTION') {
-        return response.failed(`Cannot pay in ${job.phase} phase`);
+        return gameHelper.function.response.failed(
+          `Cannot pay in ${job.phase} phase`,
+        );
       }
 
       // Check if job already has a transaction hash
       if (job.transactionHash) {
-        return response.failed('Payment already processed for this job');
+        return gameHelper.function.response.failed(
+          'Payment already processed for this job',
+        );
       }
 
       // Get job item to calculate total payment
       const jobItem = await jobItemQueries.getByJobId(jobId);
       if (!jobItem) {
-        return response.failed('Job item not found');
+        return gameHelper.function.response.failed('Job item not found');
       }
 
       // Calculate total payment
@@ -93,18 +100,18 @@ export const pay = new GameFunction({
       // Get client's wallet
       const clientWallet = await walletQueries.getByAgentId(clientId);
       if (!clientWallet) {
-        return response.failed('Client wallet not found');
+        return gameHelper.function.response.failed('Client wallet not found');
       }
 
       // Verify sufficient balance
       if (Number(clientWallet.balance) < Number(totalPayment)) {
-        return response.failed('Insufficient balance');
+        return gameHelper.function.response.failed('Insufficient balance');
       }
 
       // Get chat to send payment message
       const chat = await chatQueries.getByJobId(jobId);
       if (!chat) {
-        return response.failed('Chat not found');
+        return gameHelper.function.response.failed('Chat not found');
       }
 
       // Send payment message
@@ -122,11 +129,16 @@ export const pay = new GameFunction({
       // Update client's wallet balance (this should be done in the smart contract)
       await walletQueries.subtractBalance(clientWallet.id, totalPayment);
 
-      return response.success('Payment sent and transaction recorded', {
-        amount: totalPayment,
-      });
+      return gameHelper.function.response.success(
+        'Payment sent and transaction recorded',
+        {
+          amount: totalPayment,
+        },
+      );
     } catch (e) {
-      return response.failed(`Failed to process payment - ${e}`);
+      return gameHelper.function.response.failed(
+        `Failed to process payment - ${e}`,
+      );
     }
   },
 });

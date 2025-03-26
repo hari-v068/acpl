@@ -1,5 +1,4 @@
 import { gameHelper } from '@/lib/helpers/game.helper';
-import { response } from '@/lib/utils/game.utils';
 import {
   chatQueries,
   inventoryItemQueries,
@@ -32,52 +31,58 @@ export const evaluateDocument = new GameFunction({
     const { jobId, message } = args;
 
     if (!jobId) {
-      return response.failed('Job ID is required');
+      return gameHelper.function.response.failed('Job ID is required');
     }
     if (!message) {
-      return response.failed('Message is required');
+      return gameHelper.function.response.failed('Message is required');
     }
 
     try {
       // Get job details
       const job = await jobQueries.getById(jobId);
       if (!job) {
-        return response.failed('Job not found');
+        return gameHelper.function.response.failed('Job not found');
       }
 
       // Verify this is the evaluator
       if (evaluatorId !== 'evaluator') {
-        return response.failed('Only the evaluator can evaluate items');
+        return gameHelper.function.response.failed(
+          'Only the evaluator can evaluate items',
+        );
       }
 
       // Must be in EVALUATION phase
       if (job.phase !== 'EVALUATION') {
-        return response.failed(`Cannot evaluate in ${job.phase} phase`);
+        return gameHelper.function.response.failed(
+          `Cannot evaluate in ${job.phase} phase`,
+        );
       }
 
       // Get job item and its inventory item
       const jobItem = await jobItemQueries.getByJobId(jobId);
       if (!jobItem || !jobItem.inventoryItemId) {
-        return response.failed('No delivered item found for this job');
+        return gameHelper.function.response.failed(
+          'No delivered item found for this job',
+        );
       }
 
       const inventoryItem = await inventoryItemQueries.getById(
         jobItem.inventoryItemId,
       );
       if (!inventoryItem) {
-        return response.failed('Inventory item not found');
+        return gameHelper.function.response.failed('Inventory item not found');
       }
 
       // Get the actual item
       const item = await itemQueries.getById(inventoryItem.itemId);
       if (!item || item.name !== 'Business Permit') {
-        return response.failed('Not a valid document item');
+        return gameHelper.function.response.failed('Not a valid document item');
       }
 
       // Get chat to send evaluation message
       const chat = await chatQueries.getByJobId(jobId);
       if (!chat) {
-        return response.failed('Chat not found');
+        return gameHelper.function.response.failed('Chat not found');
       }
 
       // Send evaluation message
@@ -102,13 +107,17 @@ export const evaluateDocument = new GameFunction({
         // Get provider's wallet
         const providerWallet = await walletQueries.getByAgentId(job.providerId);
         if (!providerWallet) {
-          return response.failed('Provider wallet not found');
+          return gameHelper.function.response.failed(
+            'Provider wallet not found',
+          );
         }
 
         // Get evaluator's wallet
         const evaluatorWallet = await walletQueries.getByAgentId(evaluatorId);
         if (!evaluatorWallet) {
-          return response.failed('Evaluator wallet not found');
+          return gameHelper.function.response.failed(
+            'Evaluator wallet not found',
+          );
         }
 
         // Update balances
@@ -124,7 +133,7 @@ export const evaluateDocument = new GameFunction({
         // Update job phase to COMPLETE
         await jobQueries.updatePhase(jobId, 'COMPLETE');
 
-        return response.success(
+        return gameHelper.function.response.success(
           'Document evaluated and delivered successfully',
           {
             evaluation: { matches_description: true },
@@ -137,12 +146,17 @@ export const evaluateDocument = new GameFunction({
       } else {
         // If evaluation fails, reject the job
         await jobQueries.updatePhase(jobId, 'REJECTED');
-        return response.success('Document evaluation failed', {
-          evaluation: { matches_description: false },
-        });
+        return gameHelper.function.response.success(
+          'Document evaluation failed',
+          {
+            evaluation: { matches_description: false },
+          },
+        );
       }
     } catch (e) {
-      return response.failed(`Failed to evaluate document - ${e}`);
+      return gameHelper.function.response.failed(
+        `Failed to evaluate document - ${e}`,
+      );
     }
   },
 });

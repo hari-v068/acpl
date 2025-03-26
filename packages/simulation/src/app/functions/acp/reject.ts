@@ -1,9 +1,8 @@
+import { dbHelper } from '@/lib/helpers/db.helper';
 import { gameHelper } from '@/lib/helpers/game.helper';
-import { response } from '@/lib/utils/game.utils';
 import { chatQueries, jobQueries, messageQueries } from '@acpl/db/queries';
 import { GameFunction } from '@virtuals-protocol/game';
 import { z } from 'zod';
-import { dbHelper } from '@/lib/helpers/db.helper';
 
 const RejectArgsSchema = z.object({
   jobId: z.string().min(1, 'Job ID is required'),
@@ -33,7 +32,9 @@ export const reject = new GameFunction({
 
     const parseResult = RejectArgsSchema.safeParse(args);
     if (!parseResult.success) {
-      return response.failed(parseResult.error.issues[0].message);
+      return gameHelper.function.response.failed(
+        parseResult.error.issues[0].message,
+      );
     }
 
     const { jobId, message } = parseResult.data;
@@ -41,29 +42,33 @@ export const reject = new GameFunction({
     try {
       const chatRead = await dbHelper.utils.verifyChatRead(jobId, providerId);
       if (!chatRead) {
-        return response.failed(
+        return gameHelper.function.response.failed(
           'You must read all messages before taking this action. Use the read function first.',
         );
       }
 
       const job = await jobQueries.getById(jobId);
       if (!job) {
-        return response.failed('Job not found');
+        return gameHelper.function.response.failed('Job not found');
       }
 
       // Verify this is the provider rejecting
       if (job.providerId !== providerId) {
-        return response.failed('Only the provider can reject this job');
+        return gameHelper.function.response.failed(
+          'Only the provider can reject this job',
+        );
       }
 
       // Can only reject in REQUEST phase
       if (job.phase !== 'REQUEST') {
-        return response.failed(`Cannot reject job in ${job.phase} phase`);
+        return gameHelper.function.response.failed(
+          `Cannot reject job in ${job.phase} phase`,
+        );
       }
 
       const chat = await chatQueries.getByJobId(jobId);
       if (!chat) {
-        return response.failed('Chat not found');
+        return gameHelper.function.response.failed('Chat not found');
       }
 
       // Send rejection message
@@ -77,11 +82,14 @@ export const reject = new GameFunction({
 
       await jobQueries.updatePhase(jobId, 'REJECTED');
 
-      return response.success('Job request rejected', {
+      return gameHelper.function.response.success('Job request rejected', {
         nextPhase: 'REJECTED',
       });
     } catch (e) {
-      return response.failed(`Failed to reject job - ${e}`, { jobId });
+      return gameHelper.function.response.failed(
+        `Failed to reject job - ${e}`,
+        { jobId },
+      );
     }
   },
 });

@@ -1,5 +1,4 @@
 import { gameHelper } from '@/lib/helpers/game.helper';
-import { response } from '@/lib/utils/game.utils';
 import {
   inventoryItemQueries,
   itemQueries,
@@ -25,7 +24,7 @@ export const makePermit = new GameFunction({
     const { jobId } = args;
 
     if (!jobId) {
-      return response.failed(
+      return gameHelper.function.response.failed(
         'Missing jobId - specify the job ID for this permit',
       );
     }
@@ -34,15 +33,17 @@ export const makePermit = new GameFunction({
       // Get job details and validate phase
       const job = await jobQueries.getById(jobId);
       if (!job) {
-        return response.failed('Job not found');
+        return gameHelper.function.response.failed('Job not found');
       }
 
       if (job.phase !== 'TRANSACTION') {
-        return response.failed('Job must be in TRANSACTION phase');
+        return gameHelper.function.response.failed(
+          'Job must be in TRANSACTION phase',
+        );
       }
 
       if (job.providerId !== providerId) {
-        return response.failed(
+        return gameHelper.function.response.failed(
           'Only the provider can create permits for this job',
         );
       }
@@ -50,7 +51,9 @@ export const makePermit = new GameFunction({
       // Get job item details
       const jobItem = await jobItemQueries.getByJobId(jobId);
       if (!jobItem) {
-        return response.failed('No item found for this job');
+        return gameHelper.function.response.failed(
+          'No item found for this job',
+        );
       }
 
       const permitItem = await itemQueries.create({
@@ -78,7 +81,7 @@ export const makePermit = new GameFunction({
         providerPermitInventory.id,
       );
 
-      return response.success(
+      return gameHelper.function.response.success(
         `Successfully created ${jobItem.quantity} business permit(s)`,
         {
           permitId: permitItem.id,
@@ -87,7 +90,9 @@ export const makePermit = new GameFunction({
         },
       );
     } catch (e) {
-      return response.failed(`Failed to create permit - ${e}`);
+      return gameHelper.function.response.failed(
+        `Failed to create permit - ${e}`,
+      );
     }
   },
 });

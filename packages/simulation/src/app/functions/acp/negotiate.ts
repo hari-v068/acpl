@@ -1,6 +1,5 @@
 import { dbHelper } from '@/lib/helpers/db.helper';
 import { gameHelper } from '@/lib/helpers/game.helper';
-import { response } from '@/lib/utils/game.utils';
 import {
   chatQueries,
   jobItemQueries,
@@ -114,7 +113,9 @@ export const negotiate = new GameFunction({
       proposedTerms: termsToPropose,
     });
     if (!parseResult.success) {
-      return response.failed(parseResult.error.issues[0].message);
+      return gameHelper.function.response.failed(
+        parseResult.error.issues[0].message,
+      );
     }
 
     const { jobId, message, intention, proposedTerms } = parseResult.data;
@@ -122,7 +123,7 @@ export const negotiate = new GameFunction({
     try {
       const chatRead = await dbHelper.utils.verifyChatRead(jobId, agentId);
       if (!chatRead) {
-        return response.failed(
+        return gameHelper.function.response.failed(
           'You must read all messages before taking this action. Use the read function first.',
         );
       }
@@ -130,28 +131,32 @@ export const negotiate = new GameFunction({
       // Get job details
       const job = await jobQueries.getById(jobId);
       if (!job) {
-        return response.failed('Job not found');
+        return gameHelper.function.response.failed('Job not found');
       }
 
       // Verify agent is involved in the job
       if (job.providerId !== agentId && job.clientId !== agentId) {
-        return response.failed('Not authorized to negotiate this job');
+        return gameHelper.function.response.failed(
+          'Not authorized to negotiate this job',
+        );
       }
 
       // Must be in NEGOTIATION phase
       if (job.phase !== 'NEGOTIATION') {
-        return response.failed(`Cannot negotiate in ${job.phase} phase`);
+        return gameHelper.function.response.failed(
+          `Cannot negotiate in ${job.phase} phase`,
+        );
       }
 
       // Get chat and job item details
       const chat = await chatQueries.getByJobId(jobId);
       if (!chat) {
-        return response.failed('Chat not found');
+        return gameHelper.function.response.failed('Chat not found');
       }
 
       const jobItem = await jobItemQueries.getByJobId(jobId);
       if (!jobItem) {
-        return response.failed('Job item not found');
+        return gameHelper.function.response.failed('Job item not found');
       }
 
       // Store the message
@@ -167,7 +172,7 @@ export const negotiate = new GameFunction({
       switch (intention) {
         case 'CANCEL':
           await jobQueries.updatePhase(jobId, 'CANCELLED');
-          return response.success('Negotiation cancelled', {
+          return gameHelper.function.response.success('Negotiation cancelled', {
             nextPhase: 'CANCELLED',
           });
 
@@ -177,37 +182,45 @@ export const negotiate = new GameFunction({
             pricePerUnit: proposedTerms?.pricePerUnit ?? jobItem.pricePerUnit,
             requirements: proposedTerms?.requirements ?? jobItem.requirements,
           });
-          return response.success('Counter-offer proposed', {
-            newTerms: {
-              quantity: proposedTerms?.quantity ?? jobItem.quantity,
-              pricePerUnit: proposedTerms?.pricePerUnit ?? jobItem.pricePerUnit,
-              requirements: proposedTerms?.requirements ?? jobItem.requirements,
+          return gameHelper.function.response.success(
+            'Counter-offer proposed',
+            {
+              newTerms: {
+                quantity: proposedTerms?.quantity ?? jobItem.quantity,
+                pricePerUnit:
+                  proposedTerms?.pricePerUnit ?? jobItem.pricePerUnit,
+                requirements:
+                  proposedTerms?.requirements ?? jobItem.requirements,
+              },
             },
-          });
+          );
 
         case 'AGREE':
           if (agentId === job.providerId) {
             await jobQueries.updatePhase(jobId, 'TRANSACTION');
-            return response.success(
+            return gameHelper.function.response.success(
               'Agreement reached - proceeding to payment',
               {
                 nextPhase: 'TRANSACTION',
               },
             );
           }
-          return response.success(
+          return gameHelper.function.response.success(
             'Agreement noted - waiting for provider confirmation',
           );
 
         default:
-          return response.success('Message sent', {
+          return gameHelper.function.response.success('Message sent', {
             responseType: intention,
           });
       }
     } catch (e) {
-      return response.failed(`Failed to send negotiation message - ${e}`, {
-        jobId,
-      });
+      return gameHelper.function.response.failed(
+        `Failed to send negotiation message - ${e}`,
+        {
+          jobId,
+        },
+      );
     }
   },
 });

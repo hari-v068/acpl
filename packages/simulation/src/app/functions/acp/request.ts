@@ -1,5 +1,4 @@
 import { gameHelper } from '@/lib/helpers/game.helper';
-import { response } from '@/lib/utils/game.utils';
 import {
   chatQueries,
   jobItemQueries,
@@ -66,7 +65,9 @@ export const request = new GameFunction({
     // Validate args using Zod
     const parseResult = RequestArgsSchema.safeParse(args);
     if (!parseResult.success) {
-      return response.failed(parseResult.error.issues[0].message);
+      return gameHelper.function.response.failed(
+        parseResult.error.issues[0].message,
+      );
     }
 
     const {
@@ -80,7 +81,9 @@ export const request = new GameFunction({
 
     // Check if requesting from self
     if (providerId === clientId) {
-      return response.failed('Cannot request service from yourself');
+      return gameHelper.function.response.failed(
+        'Cannot request service from yourself',
+      );
     }
 
     try {
@@ -100,7 +103,7 @@ export const request = new GameFunction({
       ].some((job) => job.phase !== 'COMPLETE' && job.phase !== 'REJECTED');
 
       if (hasActiveJob) {
-        return response.failed(
+        return gameHelper.function.response.failed(
           'There is already an active job between you and this agent.',
         );
       }
@@ -142,18 +145,23 @@ export const request = new GameFunction({
         message,
       });
 
-      return response.success('Service request created successfully', {
-        jobId,
-        chatId,
-        terms: {
-          itemName,
-          quantity,
-          pricePerUnit,
-          requirements,
+      return gameHelper.function.response.success(
+        'Service request created successfully',
+        {
+          jobId,
+          chatId,
+          terms: {
+            itemName,
+            quantity,
+            pricePerUnit,
+            requirements,
+          },
         },
-      });
+      );
     } catch (e) {
-      return response.failed(`Failed to create service request - ${e}`);
+      return gameHelper.function.response.failed(
+        `Failed to create service request - ${e}`,
+      );
     }
   },
 });

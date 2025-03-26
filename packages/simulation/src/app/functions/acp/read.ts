@@ -1,5 +1,4 @@
 import { gameHelper } from '@/lib/helpers/game.helper';
-import { response } from '@/lib/utils/game.utils';
 import { chatQueries, messageQueries } from '@acpl/db/queries';
 import { GameFunction } from '@virtuals-protocol/game';
 import { z } from 'zod';
@@ -30,7 +29,9 @@ export const read = new GameFunction({
       chatId: args.chatId,
     });
     if (!parseResult.success) {
-      return response.failed(parseResult.error.issues[0].message);
+      return gameHelper.function.response.failed(
+        parseResult.error.issues[0].message,
+      );
     }
 
     const { chatId } = parseResult.data;
@@ -38,7 +39,9 @@ export const read = new GameFunction({
     try {
       const chat = await chatQueries.getById(chatId);
       if (!chat || (chat.clientId !== agentId && chat.providerId !== agentId)) {
-        return response.failed('Chat not found or not authorized');
+        return gameHelper.function.response.failed(
+          'Chat not found or not authorized',
+        );
       }
 
       const messages = await messageQueries.getByChatId(chatId);
@@ -46,7 +49,7 @@ export const read = new GameFunction({
       // Update lastReadBy to mark messages as read
       await chatQueries.updateLastReadBy(chatId, agentId);
 
-      return response.success('Messages read', {
+      return gameHelper.function.response.success('Messages read', {
         messages: messages.map((message) => ({
           id: message.id,
           authorId: message.authorId,
@@ -55,7 +58,9 @@ export const read = new GameFunction({
         })),
       });
     } catch (e) {
-      return response.failed(`Failed to read messages - ${e}`);
+      return gameHelper.function.response.failed(
+        `Failed to read messages - ${e}`,
+      );
     }
   },
 });

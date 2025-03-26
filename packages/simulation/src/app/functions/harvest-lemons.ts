@@ -1,5 +1,4 @@
 import { gameHelper } from '@/lib/helpers/game.helper';
-import { response } from '@/lib/utils/game.utils';
 import { inventoryItemQueries, itemQueries } from '@acpl/db/queries';
 import { GameFunction } from '@virtuals-protocol/game';
 
@@ -19,7 +18,9 @@ export const harvestLemons = new GameFunction({
     const quantity = Number(args.quantity);
 
     if (!quantity || quantity <= 0 || !Number.isInteger(quantity)) {
-      return response.failed('Quantity must be a positive integer');
+      return gameHelper.function.response.failed(
+        'Quantity must be a positive integer',
+      );
     }
 
     try {
@@ -61,13 +62,18 @@ export const harvestLemons = new GameFunction({
         });
       }
 
-      return response.success(`Successfully harvested ${quantity} lemons`, {
-        itemId: lemonItem.id,
-        quantity,
-        metadata: lemonItem.metadata,
-      });
+      return gameHelper.function.response.success(
+        `Successfully harvested ${quantity} lemons`,
+        {
+          itemId: lemonItem.id,
+          quantity,
+          metadata: lemonItem.metadata,
+        },
+      );
     } catch (e) {
-      return response.failed(`Failed to harvest lemons - ${e}`);
+      return gameHelper.function.response.failed(
+        `Failed to harvest lemons - ${e}`,
+      );
     }
   },
 });

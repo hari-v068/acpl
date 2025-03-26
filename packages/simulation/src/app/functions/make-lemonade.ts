@@ -1,5 +1,4 @@
 import { gameHelper } from '@/lib/helpers/game.helper';
-import { response } from '@/lib/utils/game.utils';
 import {
   inventoryItemQueries,
   itemQueries,
@@ -25,7 +24,7 @@ export const makeLemonade = new GameFunction({
     const { jobId } = args;
 
     if (!jobId) {
-      return response.failed(
+      return gameHelper.function.response.failed(
         'Missing jobId - specify the job ID for this lemonade order',
       );
     }
@@ -34,15 +33,17 @@ export const makeLemonade = new GameFunction({
       // Get job details and validate phase
       const job = await jobQueries.getById(jobId);
       if (!job) {
-        return response.failed('Job not found');
+        return gameHelper.function.response.failed('Job not found');
       }
 
       if (job.phase !== 'TRANSACTION') {
-        return response.failed('Job must be in TRANSACTION phase');
+        return gameHelper.function.response.failed(
+          'Job must be in TRANSACTION phase',
+        );
       }
 
       if (job.providerId !== providerId) {
-        return response.failed(
+        return gameHelper.function.response.failed(
           'Only the provider can make lemonade for this job',
         );
       }
@@ -50,7 +51,9 @@ export const makeLemonade = new GameFunction({
       // Get job item details to know quantity needed
       const jobItem = await jobItemQueries.getByJobId(jobId);
       if (!jobItem) {
-        return response.failed('No item found for this job');
+        return gameHelper.function.response.failed(
+          'No item found for this job',
+        );
       }
 
       const lemonsNeeded = jobItem.quantity * 2;
@@ -61,7 +64,7 @@ export const makeLemonade = new GameFunction({
       );
 
       if (!providerLemons || providerLemons.quantity < lemonsNeeded) {
-        return response.failed(
+        return gameHelper.function.response.failed(
           `Not enough lemons. Need ${lemonsNeeded} lemons to make ${jobItem.quantity} lemonade`,
         );
       }
@@ -97,7 +100,7 @@ export const makeLemonade = new GameFunction({
         providerLemonadeInventory.id,
       );
 
-      return response.success(
+      return gameHelper.function.response.success(
         `Successfully made ${jobItem.quantity} lemonade`,
         {
           lemonadeId: lemonadeItem.id,
@@ -107,7 +110,9 @@ export const makeLemonade = new GameFunction({
         },
       );
     } catch (e) {
-      return response.failed(`Failed to make lemonade - ${e}`);
+      return gameHelper.function.response.failed(
+        `Failed to make lemonade - ${e}`,
+      );
     }
   },
 });

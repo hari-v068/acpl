@@ -1,9 +1,8 @@
+import { dbHelper } from '@/lib/helpers/db.helper';
 import { gameHelper } from '@/lib/helpers/game.helper';
-import { response } from '@/lib/utils/game.utils';
 import { chatQueries, jobQueries, messageQueries } from '@acpl/db/queries';
 import { GameFunction } from '@virtuals-protocol/game';
 import { z } from 'zod';
-import { dbHelper } from '@/lib/helpers/db.helper';
 
 const AcceptArgsSchema = z.object({
   jobId: z.string().min(1, 'Job ID is required'),
@@ -33,7 +32,9 @@ export const accept = new GameFunction({
 
     const parseResult = AcceptArgsSchema.safeParse(args);
     if (!parseResult.success) {
-      return response.failed(parseResult.error.issues[0].message);
+      return gameHelper.function.response.failed(
+        parseResult.error.issues[0].message,
+      );
     }
 
     const { jobId, message } = parseResult.data;
@@ -41,7 +42,7 @@ export const accept = new GameFunction({
     try {
       const chatRead = await dbHelper.utils.verifyChatRead(jobId, providerId);
       if (!chatRead) {
-        return response.failed(
+        return gameHelper.function.response.failed(
           'You must read all messages before taking this action. Use the read function first.',
         );
       }
@@ -49,23 +50,27 @@ export const accept = new GameFunction({
       // Get job details
       const job = await jobQueries.getById(jobId);
       if (!job) {
-        return response.failed('Job not found');
+        return gameHelper.function.response.failed('Job not found');
       }
 
       // Verify this is the provider accepting
       if (job.providerId !== providerId) {
-        return response.failed('Only the provider can accept this job');
+        return gameHelper.function.response.failed(
+          'Only the provider can accept this job',
+        );
       }
 
       // Can only accept in REQUEST phase
       if (job.phase !== 'REQUEST') {
-        return response.failed(`Cannot accept job in ${job.phase} phase`);
+        return gameHelper.function.response.failed(
+          `Cannot accept job in ${job.phase} phase`,
+        );
       }
 
       // Get chat to send acceptance message
       const chat = await chatQueries.getByJobId(jobId);
       if (!chat) {
-        return response.failed('Chat not found');
+        return gameHelper.function.response.failed('Chat not found');
       }
 
       const messageId = `message-${chat.id}-${Date.now()}`;
@@ -79,12 +84,18 @@ export const accept = new GameFunction({
       // Update job phase to NEGOTIATION
       await jobQueries.updatePhase(jobId, 'NEGOTIATION');
 
-      return response.success('Started negotiation with client', {
-        jobId,
-        nextPhase: 'NEGOTIATION',
-      });
+      return gameHelper.function.response.success(
+        'Started negotiation with client',
+        {
+          jobId,
+          nextPhase: 'NEGOTIATION',
+        },
+      );
     } catch (e) {
-      return response.failed(`Failed to accept job - ${e}`, { jobId });
+      return gameHelper.function.response.failed(
+        `Failed to accept job - ${e}`,
+        { jobId },
+      );
     }
   },
 });

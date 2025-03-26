@@ -1,6 +1,5 @@
 import { gameHelper } from '@/lib/helpers/game.helper';
 import { evaluateImage } from '@/lib/utils/ai/gemini';
-import { response } from '@/lib/utils/game.utils';
 import {
   chatQueries,
   inventoryItemQueries,
@@ -33,56 +32,62 @@ export const evaluatePoster = new GameFunction({
     const { jobId, message } = args;
 
     if (!jobId) {
-      return response.failed('Job ID is required');
+      return gameHelper.function.response.failed('Job ID is required');
     }
     if (!message) {
-      return response.failed('Message is required');
+      return gameHelper.function.response.failed('Message is required');
     }
 
     try {
       // Get job details
       const job = await jobQueries.getById(jobId);
       if (!job) {
-        return response.failed('Job not found');
+        return gameHelper.function.response.failed('Job not found');
       }
 
       // Verify this is the evaluator
       if (evaluatorId !== 'evaluator') {
-        return response.failed('Only the evaluator can evaluate items');
+        return gameHelper.function.response.failed(
+          'Only the evaluator can evaluate items',
+        );
       }
 
       // Must be in EVALUATION phase
       if (job.phase !== 'EVALUATION') {
-        return response.failed(`Cannot evaluate in ${job.phase} phase`);
+        return gameHelper.function.response.failed(
+          `Cannot evaluate in ${job.phase} phase`,
+        );
       }
 
       // Get job item and its inventory item
       const jobItem = await jobItemQueries.getByJobId(jobId);
       if (!jobItem || !jobItem.inventoryItemId) {
-        return response.failed('No delivered item found for this job');
+        return gameHelper.function.response.failed(
+          'No delivered item found for this job',
+        );
       }
 
       const inventoryItem = await inventoryItemQueries.getById(
         jobItem.inventoryItemId,
       );
       if (!inventoryItem) {
-        return response.failed('Inventory item not found');
+        return gameHelper.function.response.failed('Inventory item not found');
       }
 
       // Get the actual item
       const item = await itemQueries.getById(inventoryItem.itemId);
       if (!item || item.name !== 'Marketing Poster') {
-        return response.failed('Not a valid poster item');
+        return gameHelper.function.response.failed('Not a valid poster item');
       }
 
       if (item.metadata.itemType !== 'DIGITAL') {
-        return response.failed('Not a digital item');
+        return gameHelper.function.response.failed('Not a digital item');
       }
 
       // Get chat to send evaluation message
       const chat = await chatQueries.getByJobId(jobId);
       if (!chat) {
-        return response.failed('Chat not found');
+        return gameHelper.function.response.failed('Chat not found');
       }
 
       // Send evaluation message
@@ -110,13 +115,17 @@ export const evaluatePoster = new GameFunction({
         // Get provider's wallet
         const providerWallet = await walletQueries.getByAgentId(job.providerId);
         if (!providerWallet) {
-          return response.failed('Provider wallet not found');
+          return gameHelper.function.response.failed(
+            'Provider wallet not found',
+          );
         }
 
         // Get evaluator's wallet
         const evaluatorWallet = await walletQueries.getByAgentId(evaluatorId);
         if (!evaluatorWallet) {
-          return response.failed('Evaluator wallet not found');
+          return gameHelper.function.response.failed(
+            'Evaluator wallet not found',
+          );
         }
 
         // Update balances
@@ -132,22 +141,30 @@ export const evaluatePoster = new GameFunction({
         // Update job phase to COMPLETE
         await jobQueries.updatePhase(jobId, 'COMPLETE');
 
-        return response.success('Poster evaluated and delivered successfully', {
-          evaluation: evaluationResult,
-          payment: {
-            provider: providerPayment,
-            evaluator: evaluatorPayment,
+        return gameHelper.function.response.success(
+          'Poster evaluated and delivered successfully',
+          {
+            evaluation: evaluationResult,
+            payment: {
+              provider: providerPayment,
+              evaluator: evaluatorPayment,
+            },
           },
-        });
+        );
       } else {
         // If evaluation fails, reject the job
         await jobQueries.updatePhase(jobId, 'REJECTED');
-        return response.success('Poster evaluation failed', {
-          evaluation: evaluationResult,
-        });
+        return gameHelper.function.response.success(
+          'Poster evaluation failed',
+          {
+            evaluation: evaluationResult,
+          },
+        );
       }
     } catch (e) {
-      return response.failed(`Failed to evaluate poster - ${e}`);
+      return gameHelper.function.response.failed(
+        `Failed to evaluate poster - ${e}`,
+      );
     }
   },
 });

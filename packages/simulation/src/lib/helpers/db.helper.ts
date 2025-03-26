@@ -10,7 +10,6 @@ import {
 import { agents, chats, inventoryItems, jobs } from '@acpl/db/schema';
 import type { AgentState } from '@acpl/types';
 import { eq, or } from 'drizzle-orm/expressions';
-import { response } from '@/lib/utils/game.utils';
 
 export const dbHelper = {
   agent: {
@@ -208,7 +207,7 @@ export const dbHelper = {
     verifyChatRead: async (jobId: string, agentId: string) => {
       const chat = await chatQueries.getByJobId(jobId);
       if (!chat) {
-        return response.failed('Chat not found');
+        return gameHelper.function.response.failed('Chat not found');
       }
 
       const hasUnreadMessages =

@@ -1,5 +1,4 @@
 import { gameHelper } from '@/lib/helpers/game.helper';
-import { response } from '@/lib/utils/game.utils';
 import { providerQueries } from '@acpl/db/queries';
 import type { Provider } from '@acpl/db/types';
 import { GameFunction } from '@virtuals-protocol/game';
@@ -30,11 +29,16 @@ export const find = new GameFunction({
           },
         }));
 
-      return response.success('Providers found successfully', {
-        providers: formattedProviders,
-      });
+      return gameHelper.function.response.success(
+        'Providers found successfully',
+        {
+          providers: formattedProviders,
+        },
+      );
     } catch (e) {
-      return response.failed(`Failed to find providers - ${e}`);
+      return gameHelper.function.response.failed(
+        `Failed to find providers - ${e}`,
+      );
     }
   },
 });

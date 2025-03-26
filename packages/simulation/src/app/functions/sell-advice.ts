@@ -1,5 +1,4 @@
 import { gameHelper } from '@/lib/helpers/game.helper';
-import { response } from '@/lib/utils/game.utils';
 import { walletQueries } from '@acpl/db/queries';
 import { GameFunction } from '@virtuals-protocol/game';
 
@@ -19,14 +18,16 @@ export const sellAdvice = new GameFunction({
     const quantity = Number(args.quantity);
 
     if (!quantity || quantity <= 0 || !Number.isInteger(quantity)) {
-      return response.failed('Quantity must be a positive integer');
+      return gameHelper.function.response.failed(
+        'Quantity must be a positive integer',
+      );
     }
 
     try {
       // Get agent's wallet
       const wallet = await walletQueries.getByAgentId(agentId);
       if (!wallet) {
-        return response.failed('Agent wallet not found');
+        return gameHelper.function.response.failed('Agent wallet not found');
       }
 
       // Generate random revenue per advice (between 1-10 units)
@@ -36,13 +37,18 @@ export const sellAdvice = new GameFunction({
       // Add revenue to wallet
       await walletQueries.addBalance(wallet.id, totalRevenue);
 
-      return response.success(`Successfully sold ${quantity} advice sessions`, {
-        revenuePerAdvice,
-        totalRevenue,
-        walletId: wallet.id,
-      });
+      return gameHelper.function.response.success(
+        `Successfully sold ${quantity} advice sessions`,
+        {
+          revenuePerAdvice,
+          totalRevenue,
+          walletId: wallet.id,
+        },
+      );
     } catch (e) {
-      return response.failed(`Failed to sell advice - ${e}`);
+      return gameHelper.function.response.failed(
+        `Failed to sell advice - ${e}`,
+      );
     }
   },
 });
