@@ -166,27 +166,46 @@ export const dbHelper = {
             inventoryItemId: job.jobItem?.inventoryItemId ?? undefined,
           },
         })),
-        chats: agentChats.map((chat) => ({
-          id: chat.id,
-          jobId: chat.jobId,
-          counterpartId:
-            chat.clientId === agentId ? chat.providerId : chat.clientId,
-          createdAt: chat.createdAt.toISOString(),
-          hasUnreadMessages: false, // we essentailly want to check if the current agent hasn't read any messages in the chat from the counterparty i guess
-          ...(chat.job.phase !== 'COMPLETED' && {
-            messages: chat.messages.map((msg) => ({
-              id: msg.id,
-              authorId: msg.authorId,
-              message: msg.message,
-              createdAt: msg.createdAt.toISOString(),
-            })),
-          }),
-        })),
+        chats: agentChats.map((chat) => {
+          const lastMessage = chat.messages[chat.messages.length - 1];
+
+          // A message is unread if:
+          // 1. There is a last message
+          // 2. The last message is from the counterpart
+          // 3. The current agent hasn't read the chat yet
+          const hasUnreadMessage =
+            lastMessage &&
+            lastMessage.authorId !== agentId &&
+            chat.lastReadBy !== agentId;
+
+          return {
+            id: chat.id,
+            jobId: chat.jobId,
+            counterpartId:
+              chat.clientId === agentId ? chat.providerId : chat.clientId,
+            createdAt: chat.createdAt.toISOString(),
+            notification: hasUnreadMessage
+              ? {
+                  type: 'UNREAD_MESSAGES',
+                  message: `You have a new message from ${chat.clientId === agentId ? chat.providerId : chat.clientId}`,
+                  count: 1,
+                }
+              : {
+                  type: 'NONE',
+                },
+            lastMessage: lastMessage
+              ? {
+                  id: lastMessage.id,
+                  authorId: lastMessage.authorId,
+                  message: lastMessage.message,
+                }
+              : undefined,
+            lastReadBy: chat.lastReadBy,
+          };
+        }),
       };
     },
   },
-
-  state: {},
 
   utils: {
     createAgentId: (name: string): string => {

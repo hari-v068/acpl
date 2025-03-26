@@ -149,6 +149,7 @@ export const chats = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
+    lastReadBy: text('last_read_by').references(() => agents.id),
   },
   (table) => [
     index('idx_chats_job_id').on(table.jobId),

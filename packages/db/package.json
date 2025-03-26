@@ -27,6 +27,8 @@
   "scripts": {
     "build": "tsc",
     "db:check": "drizzle-kit check",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
     "db:migrate": "drizzle-kit migrate",
     "check-types": "tsc --noEmit"
   },

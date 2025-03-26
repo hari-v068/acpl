@@ -50,8 +50,19 @@ export const AgentStateSchema = z.object({
       jobId: z.string(),
       counterpartId: z.string(),
       createdAt: z.string(),
-      hasUnreadMessages: z.boolean(),
-
+      notification: z.object({
+        type: z.enum(['UNREAD_MESSAGES', 'NONE']),
+        message: z.string().optional(),
+        count: z.number().optional(),
+      }),
+      lastMessage: z
+        .object({
+          id: z.string(),
+          authorId: z.string(),
+          message: z.string(),
+        })
+        .optional(),
+      lastReadBy: z.string().nullable(),
       messages: z
         .array(
           z.object({

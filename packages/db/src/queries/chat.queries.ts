@@ -83,4 +83,13 @@ export const chatQueries = {
       .returning();
     return deleted;
   },
+
+  updateLastReadBy: async (chatId: string, agentId: string): Promise<Chat> => {
+    const [updated] = await db
+      .update(chats)
+      .set({ lastReadBy: agentId })
+      .where(eq(chats.id, chatId))
+      .returning();
+    return updated;
+  },
 };

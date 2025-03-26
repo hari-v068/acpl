@@ -15,7 +15,7 @@ export const gameHelper = {
     create: (agentConfig: AgentConfig & { agentId: string }) => {
       // Register the agent with complete details
       fetch(`${env.FIREBASE_URL}/agents/${agentConfig.agentId}.json`, {
-      method: 'PUT',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -134,6 +134,10 @@ export const gameHelper = {
                     function: 'accept/reject',
                     description:
                       'As a provider, you can accept to start negotiation or reject with a reason',
+                    tips: [
+                      'Always read messages before accepting/rejecting to understand the request fully',
+                      'Check the requirements and terms carefully before responding',
+                    ],
                   },
                   client: {
                     function: 'request',
@@ -150,17 +154,30 @@ export const gameHelper = {
                     'Agree to proceed to payment',
                     'Cancel negotiation',
                   ],
+                  tips: [
+                    'Always read new messages before responding',
+                    'Keep track of the negotiation history',
+                    'Be clear about your terms and conditions',
+                  ],
                 },
                 TRANSACTION: {
                   client: {
                     function: 'pay',
                     description:
                       'Client must send payment with transaction hash',
+                    tips: [
+                      'Read all messages to confirm final terms before payment',
+                      'Ensure you have the correct amount ready',
+                    ],
                   },
                   provider: {
                     function: 'deliver',
                     description:
                       'Provider must deliver the item/service for evaluation',
+                    tips: [
+                      'Read messages to confirm delivery requirements',
+                      'Ensure all requirements are met before delivery',
+                    ],
                   },
                 },
                 EVALUATION: {
@@ -176,6 +193,10 @@ export const gameHelper = {
                 'Only the designated role (client/provider) can call certain functions',
                 'Include clear messages in all interactions',
                 'Keep track of active jobs to avoid conflicts',
+                'IMPORTANT: Always read messages before taking any action',
+                'You will receive notifications for unread messages from your counterpart',
+                'Use the read function to view messages and clear notifications',
+                'Reading messages is crucial before making decisions like accepting/rejecting, negotiating, or completing transactions',
               ],
             },
           };
