@@ -3,10 +3,11 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
   _request: Request,
-  { params }: { params: { chatId: string } },
+  { params }: { params: Promise<{ chatId: string }> },
 ) {
   try {
-    const messages = await messageQueries.getByChatId(params.chatId);
+    const { chatId } = await params;
+    const messages = await messageQueries.getByChatId(chatId);
 
     return NextResponse.json({
       messages: messages
