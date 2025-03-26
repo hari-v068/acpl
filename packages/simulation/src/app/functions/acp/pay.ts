@@ -8,6 +8,16 @@ import {
   walletQueries,
 } from '@acpl/db/queries';
 import { GameFunction } from '@virtuals-protocol/game';
+import { z } from 'zod';
+import { dbHelper } from '@/lib/helpers/db.helper';
+
+const PayArgsSchema = z.object({
+  jobId: z.string().min(1, 'Job ID is required'),
+  transactionHash: z.string().min(1, 'Transaction hash is required'),
+  message: z.string().min(1, 'Message is required'),
+});
+
+type PayArgs = z.infer<typeof PayArgsSchema>;
 
 export const pay = new GameFunction({
   name: 'pay',
@@ -32,19 +42,22 @@ export const pay = new GameFunction({
   ] as const,
   executable: async (args, _logger) => {
     const clientId = gameHelper.agent.who(args);
-    const { jobId, transactionHash, message } = args;
 
-    if (!jobId) {
-      return response.failed('Job ID is required');
+    const parseResult = PayArgsSchema.safeParse(args);
+    if (!parseResult.success) {
+      return response.failed(parseResult.error.issues[0].message);
     }
-    if (!transactionHash) {
-      return response.failed('Transaction hash is required');
-    }
-    if (!message) {
-      return response.failed('Message is required');
-    }
+
+    const { jobId, transactionHash, message } = parseResult.data;
 
     try {
+      const chatRead = await dbHelper.utils.verifyChatRead(jobId, clientId);
+      if (!chatRead) {
+        return response.failed(
+          'You must read all messages before taking this action. Use the read function first.',
+        );
+      }
+
       // Get job details
       const job = await jobQueries.getById(jobId);
       if (!job) {

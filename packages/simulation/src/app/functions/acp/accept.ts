@@ -2,6 +2,15 @@ import { gameHelper } from '@/lib/helpers/game.helper';
 import { response } from '@/lib/utils/game.utils';
 import { chatQueries, jobQueries, messageQueries } from '@acpl/db/queries';
 import { GameFunction } from '@virtuals-protocol/game';
+import { z } from 'zod';
+import { dbHelper } from '@/lib/helpers/db.helper';
+
+const AcceptArgsSchema = z.object({
+  jobId: z.string().min(1, 'Job ID is required'),
+  message: z.string().min(1, 'Message is required'),
+});
+
+type AcceptArgs = z.infer<typeof AcceptArgsSchema>;
 
 export const accept = new GameFunction({
   name: 'accept',
@@ -14,23 +23,29 @@ export const accept = new GameFunction({
       description: 'The ID of the job to accept',
     },
     {
-      name: 'reply',
+      name: 'message',
       type: 'string',
       description: "Your response to the client's request",
     },
   ] as const,
   executable: async (args, _logger) => {
     const providerId = gameHelper.agent.who(args);
-    const { jobId, reply } = args;
 
-    if (!jobId) {
-      return response.failed('Job ID is required');
+    const parseResult = AcceptArgsSchema.safeParse(args);
+    if (!parseResult.success) {
+      return response.failed(parseResult.error.issues[0].message);
     }
-    if (!reply) {
-      return response.failed('Reply is required');
-    }
+
+    const { jobId, message } = parseResult.data;
 
     try {
+      const chatRead = await dbHelper.utils.verifyChatRead(jobId, providerId);
+      if (!chatRead) {
+        return response.failed(
+          'You must read all messages before taking this action. Use the read function first.',
+        );
+      }
+
       // Get job details
       const job = await jobQueries.getById(jobId);
       if (!job) {
@@ -53,13 +68,12 @@ export const accept = new GameFunction({
         return response.failed('Chat not found');
       }
 
-      // Send reply message
       const messageId = `message-${chat.id}-${Date.now()}`;
       await messageQueries.create({
         id: messageId,
         chatId: chat.id,
         authorId: providerId,
-        message: reply,
+        message: message,
       });
 
       // Update job phase to NEGOTIATION

@@ -1,10 +1,16 @@
 import { gameHelper } from '@/lib/helpers/game.helper';
 import type { AgentConfig } from '@/lib/types.ts';
 import { db } from '@acpl/db/client';
-import { agentQueries, providerQueries, walletQueries } from '@acpl/db/queries';
+import {
+  agentQueries,
+  chatQueries,
+  providerQueries,
+  walletQueries,
+} from '@acpl/db/queries';
 import { agents, chats, inventoryItems, jobs } from '@acpl/db/schema';
 import type { AgentState } from '@acpl/types';
 import { eq, or } from 'drizzle-orm/expressions';
+import { response } from '@/lib/utils/game.utils';
 
 export const dbHelper = {
   agent: {
@@ -197,6 +203,20 @@ export const dbHelper = {
   utils: {
     createAgentId: (name: string): string => {
       return `agent-${name.toLowerCase().replace(/ /g, '-')}`;
+    },
+
+    verifyChatRead: async (jobId: string, agentId: string) => {
+      const chat = await chatQueries.getByJobId(jobId);
+      if (!chat) {
+        return response.failed('Chat not found');
+      }
+
+      const hasUnreadMessages =
+        chat.messages.length > 0 &&
+        chat.messages[chat.messages.length - 1].authorId !== agentId &&
+        chat.lastReadBy !== agentId;
+
+      return !hasUnreadMessages;
     },
   },
 };

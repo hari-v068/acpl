@@ -2,6 +2,15 @@ import { gameHelper } from '@/lib/helpers/game.helper';
 import { response } from '@/lib/utils/game.utils';
 import { chatQueries, jobQueries, messageQueries } from '@acpl/db/queries';
 import { GameFunction } from '@virtuals-protocol/game';
+import { z } from 'zod';
+import { dbHelper } from '@/lib/helpers/db.helper';
+
+const RejectArgsSchema = z.object({
+  jobId: z.string().min(1, 'Job ID is required'),
+  message: z.string().min(1, 'Message is required'),
+});
+
+type RejectArgs = z.infer<typeof RejectArgsSchema>;
 
 export const reject = new GameFunction({
   name: 'reject',
@@ -14,23 +23,29 @@ export const reject = new GameFunction({
       description: 'The ID of the job to reject',
     },
     {
-      name: 'reason',
+      name: 'message',
       type: 'string',
-      description: 'Reason for rejecting the job',
+      description: 'Message about rejecting the job',
     },
   ] as const,
   executable: async (args, _logger) => {
     const providerId = gameHelper.agent.who(args);
-    const { jobId, reason } = args;
 
-    if (!jobId) {
-      return response.failed('Job ID is required');
+    const parseResult = RejectArgsSchema.safeParse(args);
+    if (!parseResult.success) {
+      return response.failed(parseResult.error.issues[0].message);
     }
-    if (!reason) {
-      return response.failed('Reason is required');
-    }
+
+    const { jobId, message } = parseResult.data;
 
     try {
+      const chatRead = await dbHelper.utils.verifyChatRead(jobId, providerId);
+      if (!chatRead) {
+        return response.failed(
+          'You must read all messages before taking this action. Use the read function first.',
+        );
+      }
+
       const job = await jobQueries.getById(jobId);
       if (!job) {
         return response.failed('Job not found');
@@ -57,7 +72,7 @@ export const reject = new GameFunction({
         id: messageId,
         chatId: chat.id,
         authorId: providerId,
-        message: reason,
+        message: message,
       });
 
       await jobQueries.updatePhase(jobId, 'REJECTED');

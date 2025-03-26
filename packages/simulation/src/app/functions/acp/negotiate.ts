@@ -1,3 +1,4 @@
+import { dbHelper } from '@/lib/helpers/db.helper';
 import { gameHelper } from '@/lib/helpers/game.helper';
 import { response } from '@/lib/utils/game.utils';
 import {
@@ -64,11 +65,6 @@ export const negotiate = new GameFunction({
       description: 'The ID of the job being negotiated',
     },
     {
-      name: 'message',
-      type: 'string',
-      description: 'Your negotiation message',
-    },
-    {
       name: 'intention',
       type: 'string',
       description: `Your intention for this negotiation (${NegotiationIntentionEnum.options.join(
@@ -93,11 +89,15 @@ export const negotiate = new GameFunction({
       description: 'New requirements being proposed (for COUNTER intention)',
       optional: true,
     },
+    {
+      name: 'message',
+      type: 'string',
+      description: 'Your negotiation message',
+    },
   ] as const,
   executable: async (args, _logger) => {
     const agentId = gameHelper.agent.who(args);
 
-    // Build proposedTerms from individual fields if this is a counter offer
     let termsToPropose;
     if (args.intention === 'COUNTER') {
       termsToPropose = {
@@ -107,7 +107,6 @@ export const negotiate = new GameFunction({
       };
     }
 
-    // Validate args using Zod
     const parseResult = NegotiateArgsSchema.safeParse({
       jobId: args.jobId,
       message: args.message,
@@ -121,6 +120,13 @@ export const negotiate = new GameFunction({
     const { jobId, message, intention, proposedTerms } = parseResult.data;
 
     try {
+      const chatRead = await dbHelper.utils.verifyChatRead(jobId, agentId);
+      if (!chatRead) {
+        return response.failed(
+          'You must read all messages before taking this action. Use the read function first.',
+        );
+      }
+
       // Get job details
       const job = await jobQueries.getById(jobId);
       if (!job) {

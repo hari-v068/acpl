@@ -8,6 +8,15 @@ import {
   inventoryItemQueries,
 } from '@acpl/db/queries';
 import { GameFunction } from '@virtuals-protocol/game';
+import { z } from 'zod';
+import { dbHelper } from '@/lib/helpers/db.helper';
+
+const DeliverArgsSchema = z.object({
+  jobId: z.string().min(1, 'Job ID is required'),
+  message: z.string().min(1, 'Message is required'),
+});
+
+type DeliverArgs = z.infer<typeof DeliverArgsSchema>;
 
 export const deliver = new GameFunction({
   name: 'deliver',
@@ -27,16 +36,22 @@ export const deliver = new GameFunction({
   ] as const,
   executable: async (args, _logger) => {
     const providerId = gameHelper.agent.who(args);
-    const { jobId, message } = args;
 
-    if (!jobId) {
-      return response.failed('Job ID is required');
+    const parseResult = DeliverArgsSchema.safeParse(args);
+    if (!parseResult.success) {
+      return response.failed(parseResult.error.issues[0].message);
     }
-    if (!message) {
-      return response.failed('Message is required');
-    }
+
+    const { jobId, message } = parseResult.data;
 
     try {
+      const chatRead = await dbHelper.utils.verifyChatRead(jobId, providerId);
+      if (!chatRead) {
+        return response.failed(
+          'You must read all messages before taking this action. Use the read function first.',
+        );
+      }
+
       // Get job details
       const job = await jobQueries.getById(jobId);
       if (!job) {
