@@ -5,6 +5,7 @@ import {
   jobItemQueries,
   jobQueries,
   messageQueries,
+  inventoryItemQueries,
 } from '@acpl/db/queries';
 import { GameFunction } from '@virtuals-protocol/game';
 
@@ -52,10 +53,38 @@ export const deliver = new GameFunction({
         return response.failed(`Cannot deliver in ${job.phase} phase`);
       }
 
+      // Check if payment has been made by verifying transaction hash exists
+      if (!job.transactionHash) {
+        return response.failed('Cannot deliver before payment is received');
+      }
+
       // Get job item and verify it has an inventory item
       const jobItem = await jobItemQueries.getByJobId(jobId);
-      if (!jobItem || !jobItem.inventoryItemId) {
+      if (!jobItem) {
         return response.failed('No item found for this job');
+      }
+
+      // If no inventory item is linked yet, try to link one
+      if (!jobItem.inventoryItemId) {
+        // Get the provider's inventory items
+        const inventoryItems =
+          await inventoryItemQueries.getByAgentId(providerId);
+
+        // Find matching inventory item by name and quantity
+        const matchingItem = inventoryItems.find(
+          (item) =>
+            item.item.name === jobItem.itemName &&
+            item.quantity >= jobItem.quantity,
+        );
+
+        if (!matchingItem) {
+          return response.failed(
+            'No matching inventory items found for this job',
+          );
+        }
+
+        // Link the inventory item to the job
+        await jobItemQueries.updateInventoryItemId(jobItem.id, matchingItem.id);
       }
 
       // Get chat to send delivery message
