@@ -1,0 +1,43 @@
+{
+  "name": "@acpl/db",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./src/db.ts",
+      "default": "./dist/db.js"
+    },
+    "./schema": {
+      "types": "./src/schema.ts",
+      "default": "./dist/schema.js"
+    },
+    "./queries": {
+      "types": "./src/queries/index.ts",
+      "default": "./dist/queries/index.js"
+    },
+    "./types": {
+      "types": "./src/types.ts",
+      "default": "./dist/types.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "db:check": "drizzle-kit check",
+    "db:migrate": "drizzle-kit migrate",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@acpl/config": "workspace:*",
+    "@acpl/types": "workspace:*",
+    "drizzle-orm": "^0.41.0",
+    "drizzle-zod": "^0.7.0",
+    "postgres": "^3.4.5"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.30.5"
+  }
+}
