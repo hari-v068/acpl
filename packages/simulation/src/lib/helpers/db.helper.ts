@@ -172,7 +172,6 @@ export const dbHelper = {
           counterpartId:
             chat.clientId === agentId ? chat.providerId : chat.clientId,
           createdAt: chat.createdAt.toISOString(),
-          hasUnreadMessages: false, // we essentailly want to check if the current agent hasn't read any messages in the chat from the counterparty i guess
           ...(chat.job.phase !== 'COMPLETED' && {
             messages: chat.messages.map((msg) => ({
               id: msg.id,
