@@ -169,8 +169,8 @@ export const dbHelper = {
         chats: agentChats.map((chat) => {
           const hasUnreadMessage =
             chat.messages.length > 0 &&
-            chat.messages[chat.messages.length - 1].authorId ===
-              chat.providerId;
+            chat.messages[chat.messages.length - 1].authorId !== agentId &&
+            chat.lastReadBy !== agentId;
 
           return {
             id: chat.id,

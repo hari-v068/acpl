@@ -34,12 +34,10 @@ export const AgentStateSchema = z.object({
       expiredAt: z.string().nullable(),
 
       item: z.object({
-        id: z.string().optional(),
         name: z.string().optional(),
         quantity: z.number().optional(),
         pricePerUnit: z.string().optional(),
         requirements: z.string().optional(),
-        inventoryItemId: z.string().optional(),
       }),
     }),
   ),
