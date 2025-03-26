@@ -12,7 +12,7 @@ export const messageQueries = {
     message: string;
   }): Promise<Message> => {
     const [msg] = await db.insert(messages).values(data).returning();
-    
+
     return msg;
   },
 
