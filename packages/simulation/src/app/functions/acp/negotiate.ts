@@ -163,6 +163,23 @@ export const negotiate = new GameFunction({
         );
       }
 
+      // Check if counter-offer has the same terms as current job item
+      if (intention === 'COUNTER' && proposedTerms) {
+        const hasSameTerms =
+          (proposedTerms.quantity === undefined ||
+            proposedTerms.quantity === jobItem.quantity) &&
+          (proposedTerms.pricePerUnit === undefined ||
+            proposedTerms.pricePerUnit === jobItem.pricePerUnit) &&
+          (proposedTerms.requirements === undefined ||
+            proposedTerms.requirements === jobItem.requirements);
+
+        if (hasSameTerms) {
+          return gameHelper.function.response.failed(
+            'Cannot make a counter-offer with the same terms. Please wait for the other party to respond or propose different terms.',
+          );
+        }
+      }
+
       // Send negotiation message
       const messageId = `message-${chat.id}-${Date.now()}`;
       await messageQueries.create({
