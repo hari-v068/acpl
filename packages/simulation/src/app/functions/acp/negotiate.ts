@@ -1,4 +1,4 @@
-import { dbHelper } from '@/lib/helpers/db.helper';
+import { serviceHelper } from '@/lib/helpers/service.helper';
 import { gameHelper } from '@/lib/helpers/game.helper';
 import {
   chatQueries,
@@ -95,7 +95,7 @@ export const negotiate = new GameFunction({
     },
   ] as const,
   executable: async (args, _logger) => {
-    const agentId = gameHelper.agent.who(args);
+    const agentId = gameHelper.function.who(args);
 
     let termsToPropose;
     if (args.intention === 'COUNTER') {
@@ -121,14 +121,7 @@ export const negotiate = new GameFunction({
     const { jobId, message, intention, proposedTerms } = parseResult.data;
 
     try {
-      const chatRead = await dbHelper.utils.verifyChatRead(jobId, agentId);
-      if (!chatRead) {
-        return gameHelper.function.response.failed(
-          'You must read all messages before taking this action. Use the read function first.',
-        );
-      }
-
-      // Get job details
+      // Get job details first
       const job = await jobQueries.getById(jobId);
       if (!job) {
         return gameHelper.function.response.failed('Job not found');
@@ -148,18 +141,29 @@ export const negotiate = new GameFunction({
         );
       }
 
-      // Get chat and job item details
-      const chat = await chatQueries.getByJobId(jobId);
-      if (!chat) {
-        return gameHelper.function.response.failed('Chat not found');
-      }
-
+      // Get job item details
       const jobItem = await jobItemQueries.getByJobId(jobId);
       if (!jobItem) {
         return gameHelper.function.response.failed('Job item not found');
       }
 
-      // Store the message
+      // Get chat to check messages
+      const chat = await chatQueries.getByJobId(jobId);
+      if (!chat) {
+        return gameHelper.function.response.failed('Chat not found');
+      }
+
+      const hasUnreadMessages = serviceHelper.chat.hasUnreadMessages(
+        chat,
+        agentId,
+      );
+      if (hasUnreadMessages) {
+        return gameHelper.function.response.failed(
+          'You must read all messages before taking this action. Use the read function first.',
+        );
+      }
+
+      // Send negotiation message
       const messageId = `message-${chat.id}-${Date.now()}`;
       await messageQueries.create({
         id: messageId,

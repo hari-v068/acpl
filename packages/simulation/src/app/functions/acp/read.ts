@@ -22,7 +22,7 @@ export const read = new GameFunction({
     },
   ] as const,
   executable: async (args, _logger) => {
-    const agentId = gameHelper.agent.who(args);
+    const agentId = gameHelper.function.who(args);
 
     // Validate args using Zod
     const parseResult = ReadArgsSchema.safeParse({

@@ -1,4 +1,4 @@
-import { dbHelper } from '@/lib/helpers/db.helper';
+import { serviceHelper } from '@/lib/helpers/service.helper';
 import type { AgentConfig, GameFunctionArg, WorkerConfig } from '@/lib/types';
 import {
   ensureLogDirectory,
@@ -40,7 +40,7 @@ export const gameHelper = {
             gameHelper.worker.create(workerConfig, agentConfig.agentId),
           ) ?? [],
         getAgentState: async () => {
-          return await dbHelper.agent.getState(agentConfig.agentId);
+          return await serviceHelper.agent.getState(agentConfig.agentId);
         },
       });
 
@@ -103,15 +103,6 @@ export const gameHelper = {
 
       return agent;
     },
-
-    /**
-     * Gets the ID of the agent currently executing the function
-     * @param args The function arguments passed by the game engine
-     * @returns The agent ID string
-     */
-    who: <T>(args: T): string => {
-      return (args as T & { agentId: string }).agentId;
-    },
   },
 
   worker: {
@@ -122,7 +113,7 @@ export const gameHelper = {
           gameHelper.function.create(func, agentId),
         ),
         getEnvironment: async () => {
-          const state = await dbHelper.agent.getState(agentId);
+          const state = await serviceHelper.agent.getState(agentId);
 
           return {
             ...state,
@@ -226,6 +217,7 @@ export const gameHelper = {
         },
       });
     },
+
     response: {
       success: (message: string, metadata?: Record<string, unknown>) => {
         return new ExecutableGameFunctionResponse(
@@ -239,6 +231,15 @@ export const gameHelper = {
           JSON.stringify({ message, metadata }),
         );
       },
+    },
+
+    /**
+     * Gets the ID of the agent currently executing the function
+     * @param args The function arguments passed by the game engine
+     * @returns The agent ID string
+     */
+    who: <T>(args: T): string => {
+      return (args as T & { agentId: string }).agentId;
     },
   },
 };

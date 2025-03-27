@@ -60,7 +60,7 @@ export const request = new GameFunction({
     },
   ] as const,
   executable: async (args, _logger) => {
-    const clientId = gameHelper.agent.who(args);
+    const clientId = gameHelper.function.who(args);
 
     // Validate args using Zod
     const parseResult = RequestArgsSchema.safeParse(args);

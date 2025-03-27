@@ -1,4 +1,4 @@
-import { dbHelper } from '@/lib/helpers/db.helper';
+import { serviceHelper } from '@/lib/helpers/service.helper';
 import { gameHelper } from '@/lib/helpers/game.helper';
 import { chatQueries, jobQueries, messageQueries } from '@acpl/db/queries';
 import { GameFunction } from '@virtuals-protocol/game';
@@ -28,7 +28,7 @@ export const reject = new GameFunction({
     },
   ] as const,
   executable: async (args, _logger) => {
-    const providerId = gameHelper.agent.who(args);
+    const providerId = gameHelper.function.who(args);
 
     const parseResult = RejectArgsSchema.safeParse(args);
     if (!parseResult.success) {
@@ -40,13 +40,7 @@ export const reject = new GameFunction({
     const { jobId, message } = parseResult.data;
 
     try {
-      const chatRead = await dbHelper.utils.verifyChatRead(jobId, providerId);
-      if (!chatRead) {
-        return gameHelper.function.response.failed(
-          'You must read all messages before taking this action. Use the read function first.',
-        );
-      }
-
+      // Get job details first
       const job = await jobQueries.getById(jobId);
       if (!job) {
         return gameHelper.function.response.failed('Job not found');
@@ -66,9 +60,20 @@ export const reject = new GameFunction({
         );
       }
 
+      // Get chat to check messages
       const chat = await chatQueries.getByJobId(jobId);
       if (!chat) {
         return gameHelper.function.response.failed('Chat not found');
+      }
+
+      const hasUnreadMessages = serviceHelper.chat.hasUnreadMessages(
+        chat,
+        providerId,
+      );
+      if (hasUnreadMessages) {
+        return gameHelper.function.response.failed(
+          'You must read all messages before taking this action. Use the read function first.',
+        );
       }
 
       // Send rejection message
@@ -77,12 +82,14 @@ export const reject = new GameFunction({
         id: messageId,
         chatId: chat.id,
         authorId: providerId,
-        message: message,
+        message,
       });
 
+      // Update job phase to REJECTED
       await jobQueries.updatePhase(jobId, 'REJECTED');
 
       return gameHelper.function.response.success('Job request rejected', {
+        jobId,
         nextPhase: 'REJECTED',
       });
     } catch (e) {

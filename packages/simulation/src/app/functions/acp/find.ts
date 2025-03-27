@@ -9,7 +9,7 @@ export const find = new GameFunction({
   hint: 'Use this function to find agents who can provide a service to you.',
   args: [] as const,
   executable: async (args, _logger) => {
-    const agentId = gameHelper.agent.who(args);
+    const agentId = gameHelper.function.who(args);
 
     try {
       const providers = await providerQueries.getAll();

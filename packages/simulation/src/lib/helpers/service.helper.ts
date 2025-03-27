@@ -1,17 +1,13 @@
 import { gameHelper } from '@/lib/helpers/game.helper';
 import type { AgentConfig } from '@/lib/types.ts';
 import { db } from '@acpl/db/client';
-import {
-  agentQueries,
-  chatQueries,
-  providerQueries,
-  walletQueries,
-} from '@acpl/db/queries';
+import { agentQueries, providerQueries, walletQueries } from '@acpl/db/queries';
 import { agents, chats, inventoryItems, jobs } from '@acpl/db/schema';
+import { Chat, Message } from '@acpl/db/types';
 import type { AgentState } from '@acpl/types';
 import { eq, or } from 'drizzle-orm/expressions';
 
-export const dbHelper = {
+export const serviceHelper = {
   agent: {
     create: async (agentConfig: AgentConfig & { agentId: string }) => {
       // 1. Create agent
@@ -171,51 +167,50 @@ export const dbHelper = {
             inventoryItemId: job.jobItem?.inventoryItemId ?? undefined,
           },
         })),
-        chats: agentChats.map((chat) => {
-          const hasUnreadMessage =
-            chat.messages.length > 0 &&
-            chat.messages[chat.messages.length - 1].authorId !== agentId &&
-            chat.lastReadBy !== agentId;
+        chats: await Promise.all(
+          agentChats.map(async (chat) => {
+            const hasUnreadMessage = serviceHelper.chat.hasUnreadMessages(
+              chat,
+              agentId,
+            );
 
-          return {
-            id: chat.id,
-            jobId: chat.jobId,
-            counterpartId:
-              chat.clientId === agentId ? chat.providerId : chat.clientId,
-            createdAt: chat.createdAt.toISOString(),
-            notification: hasUnreadMessage
-              ? {
-                  type: 'UNREAD_MESSAGES' as const,
-                  message: 'You have unread messages',
-                }
-              : {
-                  type: 'NONE' as const,
-                  message: '',
-                },
-            lastReadBy: chat.lastReadBy ?? undefined,
-          };
-        }),
+            return {
+              id: chat.id,
+              jobId: chat.jobId,
+              counterpartId:
+                chat.clientId === agentId ? chat.providerId : chat.clientId,
+              createdAt: chat.createdAt.toISOString(),
+              notification: hasUnreadMessage
+                ? {
+                    type: 'UNREAD_MESSAGES' as const,
+                    message: 'You have unread messages',
+                  }
+                : {
+                    type: 'NONE' as const,
+                    message: '',
+                  },
+              lastReadBy: chat.lastReadBy ?? undefined,
+            };
+          }),
+        ),
       };
+    },
+
+    createDbId: (name: string): string => {
+      return `agent-${name.toLowerCase().replace(/ /g, '-')}`;
     },
   },
 
-  utils: {
-    createAgentId: (name: string): string => {
-      return `agent-${name.toLowerCase().replace(/ /g, '-')}`;
-    },
-
-    verifyChatRead: async (jobId: string, agentId: string) => {
-      const chat = await chatQueries.getByJobId(jobId);
-      if (!chat) {
-        return gameHelper.function.response.failed('Chat not found');
-      }
-
-      const hasUnreadMessages =
+  chat: {
+    hasUnreadMessages: (
+      chat: Chat & { messages: Message[] },
+      agentId: string,
+    ): boolean => {
+      return (
         chat.messages.length > 0 &&
         chat.messages[chat.messages.length - 1].authorId !== agentId &&
-        chat.lastReadBy !== agentId;
-
-      return !hasUnreadMessages;
+        chat.lastReadBy !== agentId
+      );
     },
   },
 };

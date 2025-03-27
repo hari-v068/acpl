@@ -27,7 +27,7 @@ export const makePoster = new GameFunction({
     },
   ] as const,
   executable: async (args, _logger) => {
-    const providerId = gameHelper.agent.who(args);
+    const providerId = gameHelper.function.who(args);
     const { jobId, requirements } = args;
 
     if (!jobId) {

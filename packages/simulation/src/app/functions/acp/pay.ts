@@ -1,4 +1,4 @@
-import { dbHelper } from '@/lib/helpers/db.helper';
+import { serviceHelper } from '@/lib/helpers/service.helper';
 import { gameHelper } from '@/lib/helpers/game.helper';
 import {
   chatQueries,
@@ -40,7 +40,7 @@ export const pay = new GameFunction({
     },
   ] as const,
   executable: async (args, _logger) => {
-    const clientId = gameHelper.agent.who(args);
+    const clientId = gameHelper.function.who(args);
 
     const parseResult = PayArgsSchema.safeParse(args);
     if (!parseResult.success) {
@@ -52,14 +52,7 @@ export const pay = new GameFunction({
     const { jobId, transactionHash, message } = parseResult.data;
 
     try {
-      const chatRead = await dbHelper.utils.verifyChatRead(jobId, clientId);
-      if (!chatRead) {
-        return gameHelper.function.response.failed(
-          'You must read all messages before taking this action. Use the read function first.',
-        );
-      }
-
-      // Get job details
+      // Get job details first
       const job = await jobQueries.getById(jobId);
       if (!job) {
         return gameHelper.function.response.failed('Job not found');
@@ -108,10 +101,20 @@ export const pay = new GameFunction({
         return gameHelper.function.response.failed('Insufficient balance');
       }
 
-      // Get chat to send payment message
+      // Get chat to check messages
       const chat = await chatQueries.getByJobId(jobId);
       if (!chat) {
         return gameHelper.function.response.failed('Chat not found');
+      }
+
+      const hasUnreadMessages = serviceHelper.chat.hasUnreadMessages(
+        chat,
+        clientId,
+      );
+      if (hasUnreadMessages) {
+        return gameHelper.function.response.failed(
+          'You must read all messages before taking this action. Use the read function first.',
+        );
       }
 
       // Send payment message

@@ -14,7 +14,7 @@ export const sellAdvice = new GameFunction({
     },
   ] as const,
   executable: async (args, _logger) => {
-    const agentId = gameHelper.agent.who(args);
+    const agentId = gameHelper.function.who(args);
     const quantity = Number(args.quantity);
 
     if (!quantity || quantity <= 0 || !Number.isInteger(quantity)) {

@@ -20,7 +20,7 @@ export const makeLemonade = new GameFunction({
     },
   ] as const,
   executable: async (args, _logger) => {
-    const providerId = gameHelper.agent.who(args);
+    const providerId = gameHelper.function.who(args);
     const { jobId } = args;
 
     if (!jobId) {
