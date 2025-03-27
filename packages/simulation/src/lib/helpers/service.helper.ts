@@ -183,7 +183,7 @@ export const serviceHelper = {
               notification: hasUnreadMessage
                 ? {
                     type: 'UNREAD_MESSAGES' as const,
-                    message: 'You have unread messages',
+                    message: 'You have messages waiting for your response',
                   }
                 : {
                     type: 'NONE' as const,

@@ -191,9 +191,10 @@ export const gameHelper = {
                 'Include clear messages in all interactions',
                 'Keep track of active jobs to avoid conflicts',
                 'IMPORTANT: Always read messages before taking any action',
-                'You will receive notifications for unread messages from your counterpart',
-                'Use the read function to view messages and clear notifications',
+                'You will receive notifications when your counterpart has sent messages that need your response',
+                'Use the read function to view messages, then respond appropriately',
                 'Reading messages is crucial before making decisions like accepting/rejecting, negotiating, or completing transactions',
+                'Remember: After reading messages, you must respond to keep the conversation moving forward',
               ],
             },
           };
