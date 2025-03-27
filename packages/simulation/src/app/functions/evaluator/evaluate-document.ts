@@ -9,6 +9,7 @@ import {
   walletQueries,
 } from '@acpl/db/queries';
 import { GameFunction } from '@virtuals-protocol/game';
+import { JobPhases } from '../../../../../types/src/job-phases';
 
 export const evaluateDocument = new GameFunction({
   name: 'evaluate_document',
@@ -131,7 +132,7 @@ export const evaluateDocument = new GameFunction({
         );
 
         // Update job phase to COMPLETE
-        await jobQueries.updatePhase(jobId, 'COMPLETE');
+        await jobQueries.updatePhase(jobId, JobPhases.Enum.COMPLETE);
 
         return gameHelper.function.response.success(
           'Document evaluated and delivered successfully',
@@ -145,7 +146,7 @@ export const evaluateDocument = new GameFunction({
         );
       } else {
         // If evaluation fails, reject the job
-        await jobQueries.updatePhase(jobId, 'REJECTED');
+        await jobQueries.updatePhase(jobId, JobPhases.Enum.REJECTED);
         return gameHelper.function.response.success(
           'Document evaluation failed',
           {

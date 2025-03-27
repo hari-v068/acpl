@@ -1,6 +1,7 @@
-import { serviceHelper } from '@/lib/helpers/service.helper';
 import { gameHelper } from '@/lib/helpers/game.helper';
+import { serviceHelper } from '@/lib/helpers/service.helper';
 import { chatQueries, jobQueries, messageQueries } from '@acpl/db/queries';
+import { JobPhases } from '@acpl/types';
 import { GameFunction } from '@virtuals-protocol/game';
 import { z } from 'zod';
 
@@ -85,13 +86,13 @@ export const accept = new GameFunction({
       });
 
       // Update job phase to NEGOTIATION
-      await jobQueries.updatePhase(jobId, 'NEGOTIATION');
+      await jobQueries.updatePhase(jobId, JobPhases.Enum.NEGOTIATION);
 
       return gameHelper.function.response.success(
         'Started negotiation with client',
         {
           jobId,
-          nextPhase: 'NEGOTIATION',
+          nextPhase: JobPhases.Enum.NEGOTIATION,
         },
       );
     } catch (e) {

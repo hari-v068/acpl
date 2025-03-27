@@ -8,6 +8,7 @@ import {
   messageQueries,
   walletQueries,
 } from '@acpl/db/queries';
+import { JobPhases } from '@acpl/types';
 import { GameFunction } from '@virtuals-protocol/game';
 
 export const evaluatePhysical = new GameFunction({
@@ -131,7 +132,7 @@ export const evaluatePhysical = new GameFunction({
         );
 
         // Update job phase to COMPLETE
-        await jobQueries.updatePhase(jobId, 'COMPLETE');
+        await jobQueries.updatePhase(jobId, JobPhases.Enum.COMPLETE);
 
         return gameHelper.function.response.success(
           'Physical item evaluated and delivered successfully',
@@ -145,7 +146,7 @@ export const evaluatePhysical = new GameFunction({
         );
       } else {
         // If evaluation fails, reject the job
-        await jobQueries.updatePhase(jobId, 'REJECTED');
+        await jobQueries.updatePhase(jobId, JobPhases.Enum.REJECTED);
         return gameHelper.function.response.success(
           'Physical item evaluation failed',
           {

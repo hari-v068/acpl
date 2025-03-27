@@ -50,7 +50,7 @@ async function main() {
       for (const agent of society) {
         try {
           await agent.step({ verbose: true });
-          await new Promise((resolve) => setTimeout(resolve, 30000));
+          await new Promise((resolve) => setTimeout(resolve, 5000));
         } catch (stepError) {
           console.error(`[main] - Error in ${agent.name}'s step:`, stepError);
           continue;

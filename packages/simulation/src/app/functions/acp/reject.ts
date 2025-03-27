@@ -1,6 +1,7 @@
-import { serviceHelper } from '@/lib/helpers/service.helper';
 import { gameHelper } from '@/lib/helpers/game.helper';
+import { serviceHelper } from '@/lib/helpers/service.helper';
 import { chatQueries, jobQueries, messageQueries } from '@acpl/db/queries';
+import { JobPhases } from '@acpl/types';
 import { GameFunction } from '@virtuals-protocol/game';
 import { z } from 'zod';
 
@@ -86,11 +87,11 @@ export const reject = new GameFunction({
       });
 
       // Update job phase to REJECTED
-      await jobQueries.updatePhase(jobId, 'REJECTED');
+      await jobQueries.updatePhase(jobId, JobPhases.Enum.REJECTED);
 
       return gameHelper.function.response.success('Job request rejected', {
         jobId,
-        nextPhase: 'REJECTED',
+        nextPhase: JobPhases.Enum.REJECTED,
       });
     } catch (e) {
       return gameHelper.function.response.failed(

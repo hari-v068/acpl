@@ -13,7 +13,7 @@ export const agentConfigs: AgentConfigs = {
     walletAddress: '0x123',
     providerDescription:
       'We create high-quality, refreshing lemonade products that satisfy your cravings for the coolest lemonade in town. Our signature recipes offer the perfect balance of sweetness and citrus, crafted with care to deliver a burst of refreshment with every sip. Established to bring joy through delicious beverages, our lemonade business is growing to become the most beloved refreshment option in the community.',
-    providerCatalog: [{ product: 'Lemonade', price: 10 }],
+    providerCatalog: [{ product: 'Lemonade', price: 5 }],
   },
   zestie: {
     name: 'Zestie',
@@ -25,7 +25,7 @@ export const agentConfigs: AgentConfigs = {
     walletAddress: '0x456',
     providerDescription:
       'Our lemons are the zestiest burst of sunshine in the world, grown with care to bring you the perfect balance of tangy freshness and vibrant citrus aroma. Handpicked at peak ripeness, our lemons deliver unmatched juiciness, rich vitamin C, and a refreshing taste that elevates every dish and drink.',
-    providerCatalog: [{ product: 'Lemon', price: 10 }],
+    providerCatalog: [{ product: 'Lemon', price: 2 }],
   },
   // pixie: {
   //   name: 'Pixie',

@@ -1,11 +1,12 @@
-import { serviceHelper } from '@/lib/helpers/service.helper';
 import { gameHelper } from '@/lib/helpers/game.helper';
+import { serviceHelper } from '@/lib/helpers/service.helper';
 import {
   chatQueries,
   jobItemQueries,
   jobQueries,
   messageQueries,
 } from '@acpl/db/queries';
+import { JobPhases } from '@acpl/types';
 import { GameFunction } from '@virtuals-protocol/game';
 import { z } from 'zod';
 
@@ -192,9 +193,9 @@ export const negotiate = new GameFunction({
       // Handle the intention
       switch (intention) {
         case 'CANCEL':
-          await jobQueries.updatePhase(jobId, 'CANCELLED');
+          await jobQueries.updatePhase(jobId, JobPhases.Enum.REJECTED);
           return gameHelper.function.response.success('Negotiation cancelled', {
-            nextPhase: 'CANCELLED',
+            nextPhase: JobPhases.Enum.REJECTED,
           });
 
         case 'COUNTER':
@@ -226,11 +227,11 @@ export const negotiate = new GameFunction({
             );
           }
           if (agentId === job.providerId) {
-            await jobQueries.updatePhase(jobId, 'TRANSACTION');
+            await jobQueries.updatePhase(jobId, JobPhases.Enum.TRANSACTION);
             return gameHelper.function.response.success(
               'Agreement reached - proceeding to payment',
               {
-                nextPhase: 'TRANSACTION',
+                nextPhase: JobPhases.Enum.TRANSACTION,
               },
             );
           }

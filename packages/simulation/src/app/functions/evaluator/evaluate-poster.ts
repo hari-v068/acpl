@@ -9,6 +9,7 @@ import {
   messageQueries,
   walletQueries,
 } from '@acpl/db/queries';
+import { JobPhases } from '@acpl/types';
 import { GameFunction } from '@virtuals-protocol/game';
 
 export const evaluatePoster = new GameFunction({
@@ -139,7 +140,7 @@ export const evaluatePoster = new GameFunction({
         );
 
         // Update job phase to COMPLETE
-        await jobQueries.updatePhase(jobId, 'COMPLETE');
+        await jobQueries.updatePhase(jobId, JobPhases.Enum.COMPLETE);
 
         return gameHelper.function.response.success(
           'Poster evaluated and delivered successfully',
@@ -153,7 +154,7 @@ export const evaluatePoster = new GameFunction({
         );
       } else {
         // If evaluation fails, reject the job
-        await jobQueries.updatePhase(jobId, 'REJECTED');
+        await jobQueries.updatePhase(jobId, JobPhases.Enum.REJECTED);
         return gameHelper.function.response.success(
           'Poster evaluation failed',
           {

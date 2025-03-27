@@ -9,6 +9,7 @@ import {
 } from '@acpl/db/queries';
 import { GameFunction } from '@virtuals-protocol/game';
 import { z } from 'zod';
+import { JobPhases } from '@acpl/types';
 
 const DeliverArgsSchema = z.object({
   jobId: z.string().min(1, 'Job ID is required'),
@@ -130,12 +131,12 @@ export const deliver = new GameFunction({
       });
 
       // Update job phase to EVALUATION
-      await jobQueries.updatePhase(jobId, 'EVALUATION');
+      await jobQueries.updatePhase(jobId, JobPhases.Enum.EVALUATION);
 
       return gameHelper.function.response.success(
         'Item delivered for evaluation',
         {
-          nextPhase: 'EVALUATION',
+          nextPhase: JobPhases.Enum.EVALUATION,
         },
       );
     } catch (e) {
