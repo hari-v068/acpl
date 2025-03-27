@@ -217,6 +217,14 @@ export const negotiate = new GameFunction({
           );
 
         case 'AGREE':
+          // Check if last message was from this agent
+          const messages = await messageQueries.getByChatId(chat.id);
+          const lastMessage = messages[0]; // Messages are ordered by createdAt desc
+          if (lastMessage?.authorId === agentId) {
+            return gameHelper.function.response.failed(
+              'You cannot agree to your own counter-offer. Wait for your counterpart to respond.',
+            );
+          }
           if (agentId === job.providerId) {
             await jobQueries.updatePhase(jobId, 'TRANSACTION');
             return gameHelper.function.response.success(
