@@ -10,7 +10,7 @@
     "@acpl/db": "workspace:*",
     "@acpl/types": "workspace:*",
     "@ai-sdk/google": "^1.2.2",
-    "@virtuals-protocol/game": "^0.1.10",
+    "@virtuals-protocol/game": "^0.1.11",
     "ai": "^4.2.2",
     "drizzle-orm": "^0.41.0"
   }
