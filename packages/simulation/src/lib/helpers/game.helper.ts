@@ -1,4 +1,5 @@
 import { serviceHelper } from '@/lib/helpers/service.helper';
+import { agentInstructions } from '@/lib/instructions';
 import type { AgentConfig, GameFunctionArg, WorkerConfig } from '@/lib/types';
 import {
   ensureLogDirectory,
@@ -118,87 +119,16 @@ export const gameHelper = {
           return {
             ...state,
             instructions: {
-              description: 'Society Worker Function Flow Guide',
-              phases: {
-                initial: {
-                  function: 'find',
-                  description:
-                    'Start by finding available providers for your needed service',
-                  nextPhase: 'REQUEST',
-                },
-                REQUEST: {
-                  provider: {
-                    function: 'accept/reject',
-                    description:
-                      'As a provider, you can accept to start negotiation or reject with a reason',
-                    tips: [
-                      'Always read messages before accepting/rejecting to understand the request fully',
-                      'Check the requirements and terms carefully before responding',
-                    ],
-                  },
-                  client: {
-                    function: 'request',
-                    description:
-                      'As a client, initiate a job request with item details and price',
-                  },
-                },
-                NEGOTIATION: {
-                  function: 'negotiate',
-                  description:
-                    'Both parties can discuss terms using negotiate. Provider can signal agreement to move to transaction',
-                  actions: [
-                    'Counter-offer with different terms',
-                    'Agree to proceed to payment (must specify exact terms being agreed to)',
-                    'Cancel negotiation',
-                  ],
-                  tips: [
-                    'Always read new messages before responding',
-                    'Keep track of the negotiation history',
-                    'Be clear about your terms and conditions',
-                    'Terms can ONLY be changed through COUNTER actions',
-                    'When agreeing, you must specify the exact terms you are agreeing to',
-                    'Discussing terms in messages does not change the official terms',
-                  ],
-                },
-                TRANSACTION: {
-                  client: {
-                    function: 'pay',
-                    description:
-                      'Client must send payment with transaction hash',
-                    tips: [
-                      'Read all messages to confirm final terms before payment',
-                      'Ensure you have the correct amount ready',
-                    ],
-                  },
-                  provider: {
-                    function: 'deliver',
-                    description:
-                      'Provider must deliver the item/service for evaluation',
-                    tips: [
-                      'Read messages to confirm delivery requirements',
-                      'Ensure all requirements are met before delivery',
-                    ],
-                  },
-                },
-                EVALUATION: {
-                  description: 'System evaluates the delivered item/service',
-                  outcome:
-                    'Automatically moves to COMPLETE or handles disputes',
-                },
+              description:
+                'ACP (Agent-Commerce-Protocol) Worker Function Flow Guide',
+              flows: {
+                client: agentInstructions.clientFlow,
+                provider: agentInstructions.providerFlow,
+                activeJob: agentInstructions.activeJobFlow,
               },
+              rules: agentInstructions.rules,
               phaseFlow:
                 'REQUEST → NEGOTIATION → TRANSACTION → EVALUATION → COMPLETE',
-              tips: [
-                'Always check current job phase before calling functions',
-                'Only the designated role (client/provider) can call certain functions',
-                'Include clear messages in all interactions',
-                'Keep track of active jobs to avoid conflicts',
-                'IMPORTANT: Always read messages before taking any action',
-                'You will receive notifications when your counterpart has sent messages that need your response',
-                'Use the read function to view messages, then respond appropriately',
-                'Reading messages is crucial before making decisions like accepting/rejecting, negotiating, or completing transactions',
-                'Remember: After reading messages, you must respond to keep the conversation moving forward',
-              ],
             },
           };
         },
