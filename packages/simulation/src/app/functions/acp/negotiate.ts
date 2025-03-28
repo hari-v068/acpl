@@ -181,19 +181,18 @@ export const negotiate = new GameFunction({
         }
       }
 
-      // Send negotiation message
-      const messageId = `message-${chat.id}-${Date.now()}`;
-      await messageQueries.create({
-        id: messageId,
-        chatId: chat.id,
-        authorId: agentId,
-        message,
-      });
-
       // Handle the intention
       switch (intention) {
         case 'CANCEL':
           await jobQueries.updatePhase(jobId, JobPhases.Enum.REJECTED);
+          // Send cancellation message
+          const cancelMessageId = `message-${chat.id}-${Date.now()}`;
+          await messageQueries.create({
+            id: cancelMessageId,
+            chatId: chat.id,
+            authorId: agentId,
+            message,
+          });
           return gameHelper.function.response.success('Negotiation cancelled', {
             nextPhase: JobPhases.Enum.REJECTED,
           });
@@ -203,6 +202,14 @@ export const negotiate = new GameFunction({
             quantity: proposedTerms?.quantity ?? jobItem.quantity,
             pricePerUnit: proposedTerms?.pricePerUnit ?? jobItem.pricePerUnit,
             requirements: proposedTerms?.requirements ?? jobItem.requirements,
+          });
+          // Send counter-offer message
+          const counterMessageId = `message-${chat.id}-${Date.now()}`;
+          await messageQueries.create({
+            id: counterMessageId,
+            chatId: chat.id,
+            authorId: agentId,
+            message,
           });
           return gameHelper.function.response.success(
             'Counter-offer proposed',
@@ -228,6 +235,14 @@ export const negotiate = new GameFunction({
           }
           if (agentId === job.providerId) {
             await jobQueries.updatePhase(jobId, JobPhases.Enum.TRANSACTION);
+            // Send agreement message
+            const agreeMessageId = `message-${chat.id}-${Date.now()}`;
+            await messageQueries.create({
+              id: agreeMessageId,
+              chatId: chat.id,
+              authorId: agentId,
+              message,
+            });
             return gameHelper.function.response.success(
               'Agreement reached - proceeding to payment',
               {
@@ -235,11 +250,27 @@ export const negotiate = new GameFunction({
               },
             );
           }
+          // Send agreement message for client
+          const agreeMessageId = `message-${chat.id}-${Date.now()}`;
+          await messageQueries.create({
+            id: agreeMessageId,
+            chatId: chat.id,
+            authorId: agentId,
+            message,
+          });
           return gameHelper.function.response.success(
             'Agreement noted - waiting for provider confirmation',
           );
 
         default:
+          // Send general message
+          const generalMessageId = `message-${chat.id}-${Date.now()}`;
+          await messageQueries.create({
+            id: generalMessageId,
+            chatId: chat.id,
+            authorId: agentId,
+            message,
+          });
           return gameHelper.function.response.success('Message sent', {
             responseType: intention,
           });
