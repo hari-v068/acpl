@@ -47,14 +47,19 @@ async function main() {
     //   await agent.run(5, { verbose: true });
     // }
     while (true) {
-      for (const agent of society) {
-        try {
-          await agent.step({ verbose: true });
-          await new Promise((resolve) => setTimeout(resolve, 5000));
-        } catch (stepError) {
-          console.error(`[main] - Error in ${agent.name}'s step:`, stepError);
-          continue;
-        }
+      try {
+        await Promise.all(
+          society.map((agent) =>
+            agent
+              .step({ verbose: true })
+              .catch((error) =>
+                console.error(`[main] - Error in ${agent.name}'s step:`, error),
+              ),
+          ),
+        );
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+      } catch (error) {
+        console.error('[main] - Critical error in simulation:', error);
       }
     }
   } catch (error) {
