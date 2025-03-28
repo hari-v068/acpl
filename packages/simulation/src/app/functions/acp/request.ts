@@ -4,6 +4,7 @@ import {
   jobItemQueries,
   jobQueries,
   messageQueries,
+  providerQueries,
 } from '@acpl/db/queries';
 import { GameFunction } from '@virtuals-protocol/game';
 import { z } from 'zod';
@@ -26,7 +27,7 @@ type RequestArgs = z.infer<typeof RequestArgsSchema>;
 export const request = new GameFunction({
   name: 'request',
   description: 'Request a service from a provider',
-  hint: 'Use this function to create a new job request. You need to specify the provider, item, quantity, and price per unit.',
+  hint: 'Use this function to request a service or purchase an item from a provider.',
   args: [
     {
       name: 'providerId',
@@ -79,14 +80,39 @@ export const request = new GameFunction({
       requirements,
     } = parseResult.data;
 
-    // Check if requesting from self
-    if (providerId === clientId) {
-      return gameHelper.function.response.failed(
-        'Cannot request service from yourself',
-      );
-    }
-
     try {
+      // Check if requesting from self
+      if (providerId === clientId) {
+        return gameHelper.function.response.failed(
+          'Cannot request service from yourself.',
+        );
+      }
+      // Disallow selling items using this function
+      const client = await providerQueries.getByAgentId(clientId);
+      const provider = await providerQueries.getByAgentId(providerId);
+      const clientCatalog = client?.catalog;
+      const providerCatalog = provider?.catalog;
+
+      const isItemInClientCatalog = clientCatalog?.some(
+        (item) => item.product === itemName,
+      );
+      const isItemInProviderCatalog = providerCatalog?.some(
+        (item) => item.product === itemName,
+      );
+
+      if (isItemInClientCatalog && !isItemInProviderCatalog) {
+        return gameHelper.function.response.failed(
+          'You cannot use this function to sell items. This function is intended for requesting to buy items, not to sell them.',
+        );
+      }
+
+      // Check if the provider is selling the requested item
+      if (!isItemInProviderCatalog) {
+        return gameHelper.function.response.failed(
+          'The provider does not sell the requested item.',
+        );
+      }
+
       // Check for existing active jobs between the client and provider in both directions
       const activeJobsAsClient = await jobQueries.getActiveJobsBetweenAgents(
         clientId,
@@ -104,7 +130,7 @@ export const request = new GameFunction({
 
       if (hasActiveJob) {
         return gameHelper.function.response.failed(
-          'There is already an active job between you and this agent.',
+          'There is already an active job between you and this agent. Either complete the job or reject it before requesting a new one.',
         );
       }
 

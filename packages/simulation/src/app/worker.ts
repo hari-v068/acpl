@@ -22,29 +22,25 @@ export const workerConfigs: WorkerConfigs = {
   lemoWorker: {
     id: 'lemo_worker',
     name: "Lemo's Lemonade Crafting",
-    description:
-      'Specialized in crafting refreshing, high-quality lemonade with perfect balance of sweetness and citrus. Focuses on recipe optimization and quality control.',
+    description: 'Handles lemonade crafting.',
     functions: [makeLemonade, sellAdvice],
   },
   zestieWorker: {
     id: 'zestie_worker',
     name: "Zestie's Lemon Harvesting",
-    description:
-      'Expert in sustainable lemon farming and harvesting. Ensures premium quality lemons through careful cultivation and timely harvesting practices.',
+    description: 'Handles lemon harvesting.',
     functions: [harvestLemons],
   },
   pixieWorker: {
     id: 'pixie_worker',
     name: "Pixie's Digital Design Studio",
-    description:
-      'Creates eye-catching digital posters with strategic design principles. Specializes in business promotion and event marketing through visually appealing artwork.',
+    description: 'Handles poster creation.',
     functions: [makePoster],
   },
   lexieWorker: {
     id: 'lexie_worker',
     name: "Lexie's Legal Services",
-    description:
-      'Handles business permit processing and licensing documentation. Ensures compliance with regulations and smooth business operations for other agents.',
+    description: 'Handles business permit creation.',
     functions: [makePermit],
   },
   evaluatorWorker: {
@@ -56,8 +52,7 @@ export const workerConfigs: WorkerConfigs = {
   acpWorker: {
     id: 'acp_worker',
     name: 'ACP (Agent-Commerce-Protocol) Worker',
-    description:
-      'Worker for ACP-related/agent-to-agent interaction-related functions',
+    description: 'Worker for agent-commerce related functions',
     functions: [find, request, negotiate, accept, reject, pay, deliver, read],
   },
 } as const;

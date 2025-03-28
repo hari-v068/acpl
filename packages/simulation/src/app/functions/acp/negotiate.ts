@@ -18,7 +18,19 @@ const NegotiationIntentionEnum = z.enum([
   'GENERAL',
 ]);
 
-const ProposedTermsSchema = z
+// Complete terms schema (for AGREE)
+const CompleteTermsSchema = z.object({
+  quantity: z.number().int().positive(),
+  pricePerUnit: z.coerce
+    .number()
+    .positive('Price must be greater than 0')
+    .max(999999999.99, 'Price exceeds maximum allowed value')
+    .transform((num) => num.toFixed(2)),
+  requirements: z.string().min(1),
+});
+
+// Partial terms schema (for COUNTER)
+const PartialTermsSchema = z
   .object({
     quantity: z.number().int().positive().optional(),
     pricePerUnit: z.coerce
@@ -39,19 +51,28 @@ const NegotiateArgsSchema = z
     jobId: z.string().min(1, 'Job ID is required'),
     message: z.string().min(1, 'Message is required'),
     intention: NegotiationIntentionEnum,
-    proposedTerms: z.union([ProposedTermsSchema, z.undefined()]),
+    proposedTerms: z.union([
+      CompleteTermsSchema,
+      PartialTermsSchema,
+      z.undefined(),
+    ]),
   })
   .refine(
     (data) => {
-      if (data.intention === 'COUNTER') {
-        return data.proposedTerms !== undefined;
-      }
       if (data.intention === 'AGREE') {
+        return (
+          data.proposedTerms &&
+          CompleteTermsSchema.safeParse(data.proposedTerms).success
+        );
+      }
+      if (data.intention === 'COUNTER') {
         return data.proposedTerms !== undefined;
       }
       return true;
     },
-    { message: 'Terms are required for COUNTER and AGREE intentions' },
+    {
+      message: 'AGREE requires all terms. COUNTER requires at least one term.',
+    },
   );
 
 type NegotiationIntention = z.infer<typeof NegotiationIntentionEnum>;
@@ -77,19 +98,19 @@ export const negotiate = new GameFunction({
     {
       name: 'quantity',
       type: 'number',
-      description: 'New quantity being proposed (for COUNTER intention)',
+      description: 'New quantity being proposed',
       optional: true,
     },
     {
       name: 'pricePerUnit',
       type: 'string',
-      description: 'New price per unit being proposed (for COUNTER intention)',
+      description: 'New price per unit being proposed',
       optional: true,
     },
     {
       name: 'requirements',
       type: 'string',
-      description: 'New requirements being proposed (for COUNTER intention)',
+      description: 'New requirements being proposed',
       optional: true,
     },
     {
@@ -102,7 +123,7 @@ export const negotiate = new GameFunction({
     const agentId = gameHelper.function.who(args);
 
     let termsToPropose;
-    if (args.intention === 'COUNTER') {
+    if (args.intention === 'COUNTER' || args.intention === 'AGREE') {
       termsToPropose = {
         quantity: args.quantity,
         pricePerUnit: args.pricePerUnit,

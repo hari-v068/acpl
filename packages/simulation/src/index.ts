@@ -42,10 +42,6 @@ async function main() {
       }),
     );
 
-    // console.log('[main] - RUNNING SOCIETY');
-    // for (const { agent } of society) {
-    //   await agent.run(5, { verbose: true });
-    // }
     while (true) {
       try {
         await Promise.all(
