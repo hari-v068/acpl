@@ -148,13 +148,16 @@ export const gameHelper = {
                     'Both parties can discuss terms using negotiate. Provider can signal agreement to move to transaction',
                   actions: [
                     'Counter-offer with different terms',
-                    'Agree to proceed to payment',
+                    'Agree to proceed to payment (must specify exact terms being agreed to)',
                     'Cancel negotiation',
                   ],
                   tips: [
                     'Always read new messages before responding',
                     'Keep track of the negotiation history',
                     'Be clear about your terms and conditions',
+                    'Terms can ONLY be changed through COUNTER actions',
+                    'When agreeing, you must specify the exact terms you are agreeing to',
+                    'Discussing terms in messages does not change the official terms',
                   ],
                 },
                 TRANSACTION: {

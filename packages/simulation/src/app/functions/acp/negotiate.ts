@@ -46,9 +46,12 @@ const NegotiateArgsSchema = z
       if (data.intention === 'COUNTER') {
         return data.proposedTerms !== undefined;
       }
+      if (data.intention === 'AGREE') {
+        return data.proposedTerms !== undefined;
+      }
       return true;
     },
-    { message: 'Proposed terms are required for COUNTER intention' },
+    { message: 'Terms are required for COUNTER and AGREE intentions' },
   );
 
 type NegotiationIntention = z.infer<typeof NegotiationIntentionEnum>;
@@ -57,7 +60,7 @@ type NegotiateArgs = z.infer<typeof NegotiateArgsSchema>;
 export const negotiate = new GameFunction({
   name: 'negotiate',
   description: 'Send a message during job negotiation',
-  hint: 'Use this to discuss terms, make counter-offers, or agree to terms during NEGOTIATION phase.',
+  hint: 'Use this to discuss terms, make counter-offers, or agree to current terms during NEGOTIATION phase.',
   args: [
     {
       name: 'jobId',
@@ -199,9 +202,9 @@ export const negotiate = new GameFunction({
 
         case 'COUNTER':
           await jobItemQueries.update(jobItem.id, {
-            quantity: proposedTerms?.quantity ?? jobItem.quantity,
-            pricePerUnit: proposedTerms?.pricePerUnit ?? jobItem.pricePerUnit,
-            requirements: proposedTerms?.requirements ?? jobItem.requirements,
+            quantity: proposedTerms?.quantity,
+            pricePerUnit: proposedTerms?.pricePerUnit,
+            requirements: proposedTerms?.requirements,
           });
           // Send counter-offer message
           const counterMessageId = `message-${chat.id}-${Date.now()}`;
@@ -225,9 +228,29 @@ export const negotiate = new GameFunction({
           );
 
         case 'AGREE':
+          // Check if terms are different from current job item
+          const agreedTerms = {
+            quantity: proposedTerms?.quantity,
+            pricePerUnit: proposedTerms?.pricePerUnit,
+            requirements: proposedTerms?.requirements,
+          };
+          const currentJobTerms = {
+            quantity: jobItem.quantity,
+            pricePerUnit: jobItem.pricePerUnit,
+            requirements: jobItem.requirements,
+          };
+          if (
+            agreedTerms.quantity === currentJobTerms.quantity &&
+            agreedTerms.pricePerUnit === currentJobTerms.pricePerUnit &&
+            agreedTerms.requirements === currentJobTerms.requirements
+          ) {
+            return gameHelper.function.response.failed(
+              'Cannot agree to terms that differ from current proposal. Use COUNTER to propose new terms first.',
+            );
+          }
           // Check if last message was from this agent
           const messages = await messageQueries.getByChatId(chat.id);
-          const lastMessage = messages[0]; // Messages are ordered by createdAt desc
+          const lastMessage = messages[0];
           if (lastMessage?.authorId === agentId) {
             return gameHelper.function.response.failed(
               'You cannot agree to your own counter-offer. Wait for your counterpart to respond.',
