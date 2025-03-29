@@ -15,7 +15,17 @@ type RejectArgs = z.infer<typeof RejectArgsSchema>;
 export const reject = new GameFunction({
   name: 'reject',
   description: 'Reject a job request',
-  hint: 'Use this to reject an initial job request. For ongoing negotiations, use negotiate function.',
+  hint: `
+    Use this function to reject a client's initial job request. Important notes:
+      
+    - Only the provider can reject the job
+    - Can only be used in REQUEST phase
+    - Must read all messages before rejecting
+    - Will move the job to REJECTED phase
+    - Include a message explaining why you're rejecting the request
+    
+    Note: For ongoing negotiations, use the negotiate function with CANCEL intention instead.
+  `,
   args: [
     {
       name: 'jobId',

@@ -21,7 +21,19 @@ type PayArgs = z.infer<typeof PayArgsSchema>;
 export const pay = new GameFunction({
   name: 'pay',
   description: 'Send payment for a job',
-  hint: 'Use this to send payment for a job during the TRANSACTION phase. Include the transaction hash from the smart contract.',
+  hint: `
+    Use this function to send payment for a job during the TRANSACTION phase. Important notes:
+
+    - Only the client can send payment
+    - Can only be used in TRANSACTION phase
+    - Must read all messages before paying
+    - Requires sufficient wallet balance
+    - Payment must be made before delivery
+    - Include the transaction hash from the smart contract
+    - Payment amount is calculated from job terms (quantity × price)
+
+    The payment will be processed and the provider will be notified to proceed with delivery.
+  `,
   args: [
     {
       name: 'jobId',

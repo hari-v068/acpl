@@ -21,7 +21,19 @@ type DeliverArgs = z.infer<typeof DeliverArgsSchema>;
 export const deliver = new GameFunction({
   name: 'deliver',
   description: 'Deliver an item for evaluation',
-  hint: 'Use this to deliver an item for evaluation during the TRANSACTION phase.',
+  hint: `
+      Use this function to deliver an item for evaluation during the TRANSACTION phase. Important notes:
+
+    - Only the provider can deliver items
+    - Can only be used in TRANSACTION phase
+    - Must read all messages before delivering
+    - Payment must be received before delivery
+    - Must have matching inventory items available
+    - Will move the job to EVALUATION phase
+    - Include a message about the delivery details
+
+    The delivery will be recorded and the client will be notified to evaluate the item.
+  `,
   args: [
     {
       name: 'jobId',

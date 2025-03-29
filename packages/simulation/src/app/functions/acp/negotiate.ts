@@ -13,13 +13,12 @@ import { z } from 'zod';
 const NegotiationIntentionEnum = z.enum([
   'COUNTER',
   'AGREE',
-  'DISAGREE',
   'CANCEL',
   'GENERAL',
 ]);
 
-// Complete terms schema (for AGREE)
-const CompleteTermsSchema = z.object({
+// Terms schema for all actions except CANCEL and GENERAL
+const TermsSchema = z.object({
   quantity: z.number().int().positive(),
   pricePerUnit: z.coerce
     .number()
@@ -29,49 +28,22 @@ const CompleteTermsSchema = z.object({
   requirements: z.string().min(1),
 });
 
-// Partial terms schema (for COUNTER)
-const PartialTermsSchema = z
-  .object({
-    quantity: z.number().int().positive().optional(),
-    pricePerUnit: z.coerce
-      .number()
-      .positive('Price must be greater than 0')
-      .max(999999999.99, 'Price exceeds maximum allowed value')
-      .transform((num) => num.toFixed(2))
-      .optional(),
-    requirements: z.string().min(1).optional(),
-  })
-  .refine(
-    (data) => Object.keys(data).length > 0,
-    'At least one term must be provided for counter-offer',
-  );
-
 const NegotiateArgsSchema = z
   .object({
     jobId: z.string().min(1, 'Job ID is required'),
     message: z.string().min(1, 'Message is required'),
     intention: NegotiationIntentionEnum,
-    proposedTerms: z.union([
-      CompleteTermsSchema,
-      PartialTermsSchema,
-      z.undefined(),
-    ]),
+    proposedTerms: z.union([TermsSchema, z.undefined()]),
   })
   .refine(
     (data) => {
-      if (data.intention === 'AGREE') {
-        return (
-          data.proposedTerms &&
-          CompleteTermsSchema.safeParse(data.proposedTerms).success
-        );
-      }
-      if (data.intention === 'COUNTER') {
+      if (data.intention === 'AGREE' || data.intention === 'COUNTER') {
         return data.proposedTerms !== undefined;
       }
       return true;
     },
     {
-      message: 'AGREE requires all terms. COUNTER requires at least one term.',
+      message: 'AGREE and COUNTER require all terms to be specified.',
     },
   );
 
@@ -81,7 +53,16 @@ type NegotiateArgs = z.infer<typeof NegotiateArgsSchema>;
 export const negotiate = new GameFunction({
   name: 'negotiate',
   description: 'Send a message during job negotiation',
-  hint: 'Use this to discuss terms, make counter-offers, or agree to current terms during NEGOTIATION phase.',
+  hint: `
+    Use this to negotiate job terms during the NEGOTIATION phase. Each intention has a specific purpose:
+
+    - AGREE: Use when you want to accept the current terms. You must provide the exact same terms as currently proposed.
+    - COUNTER: Use when you want to propose new terms. You must provide all terms (quantity, price, requirements) that differ from current proposal.
+    - CANCEL: Use when you want to end the negotiation without reaching an agreement.
+    - GENERAL: Use for general discussion without changing any terms.
+
+    Remember: You must read all messages before taking any action.
+  `,
   args: [
     {
       name: 'jobId',
@@ -98,19 +79,19 @@ export const negotiate = new GameFunction({
     {
       name: 'quantity',
       type: 'number',
-      description: 'New quantity being proposed',
+      description: 'Quantity being proposed',
       optional: true,
     },
     {
       name: 'pricePerUnit',
       type: 'string',
-      description: 'New price per unit being proposed',
+      description: 'Price per unit being proposed',
       optional: true,
     },
     {
       name: 'requirements',
       type: 'string',
-      description: 'New requirements being proposed',
+      description: 'Requirements being proposed',
       optional: true,
     },
     {
@@ -191,16 +172,13 @@ export const negotiate = new GameFunction({
       // Check if counter-offer has the same terms as current job item
       if (intention === 'COUNTER' && proposedTerms) {
         const hasSameTerms =
-          (proposedTerms.quantity === undefined ||
-            proposedTerms.quantity === jobItem.quantity) &&
-          (proposedTerms.pricePerUnit === undefined ||
-            proposedTerms.pricePerUnit === jobItem.pricePerUnit) &&
-          (proposedTerms.requirements === undefined ||
-            proposedTerms.requirements === jobItem.requirements);
+          proposedTerms.quantity === jobItem.quantity &&
+          proposedTerms.pricePerUnit === jobItem.pricePerUnit &&
+          proposedTerms.requirements === jobItem.requirements;
 
         if (hasSameTerms) {
           return gameHelper.function.response.failed(
-            'Cannot make a counter-offer with the same terms. Please wait for the other party to respond or propose different terms.',
+            'Cannot make a counter-offer with the same terms. Please propose different terms.',
           );
         }
       }
@@ -238,32 +216,16 @@ export const negotiate = new GameFunction({
           return gameHelper.function.response.success(
             'Counter-offer proposed',
             {
-              newTerms: {
-                quantity: proposedTerms?.quantity ?? jobItem.quantity,
-                pricePerUnit:
-                  proposedTerms?.pricePerUnit ?? jobItem.pricePerUnit,
-                requirements:
-                  proposedTerms?.requirements ?? jobItem.requirements,
-              },
+              newTerms: proposedTerms,
             },
           );
 
         case 'AGREE':
-          // Check if terms are different from current job item
-          const agreedTerms = {
-            quantity: proposedTerms?.quantity,
-            pricePerUnit: proposedTerms?.pricePerUnit,
-            requirements: proposedTerms?.requirements,
-          };
-          const currentJobTerms = {
-            quantity: jobItem.quantity,
-            pricePerUnit: jobItem.pricePerUnit,
-            requirements: jobItem.requirements,
-          };
+          // Check if terms match current job item
           if (
-            agreedTerms.quantity === currentJobTerms.quantity &&
-            agreedTerms.pricePerUnit === currentJobTerms.pricePerUnit &&
-            agreedTerms.requirements === currentJobTerms.requirements
+            proposedTerms?.quantity !== jobItem.quantity ||
+            proposedTerms?.pricePerUnit !== jobItem.pricePerUnit ||
+            proposedTerms?.requirements !== jobItem.requirements
           ) {
             return gameHelper.function.response.failed(
               'Cannot agree to terms that differ from current proposal. Use COUNTER to propose new terms first.',

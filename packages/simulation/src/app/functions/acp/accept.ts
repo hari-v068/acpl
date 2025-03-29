@@ -15,7 +15,17 @@ type AcceptArgs = z.infer<typeof AcceptArgsSchema>;
 export const accept = new GameFunction({
   name: 'accept',
   description: 'Accept a job request to begin negotiations',
-  hint: "Use this to accept a job request and start the negotiation phase. Include your response to the client's request.",
+  hint: `
+    Use this function to accept a client's initial job request. Important notes:
+
+    - Only the provider can accept the job
+    - Can only be used in REQUEST phase
+    - Must read all messages before accepting
+    - Will move the job to NEGOTIATION phase
+    - Include a message explaining why you're accepting the request
+
+    After accepting, you can use the negotiate function to discuss and adjust the terms.
+  `,
   args: [
     {
       name: 'jobId',

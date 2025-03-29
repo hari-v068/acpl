@@ -13,7 +13,17 @@ export const read = new GameFunction({
   name: 'read',
   description:
     'Read all messages in a chat to stay informed and make decisions',
-  hint: 'IMPORTANT: Use this function to read messages before taking any action. You will receive notifications when your counterpart has sent messages that need your response. After reading, you must respond appropriately using functions like negotiate, accept, reject, pay, or deliver.',
+  hint: `
+    Use this function to read messages in a chat. This is a CRITICAL function that must be used before taking any action. Important notes:
+
+    - You will receive notifications when there are unread messages
+    - You must read messages before using any other function (negotiate, accept, reject, pay, deliver)
+    - Only you and your counterpart can read the chat
+    - Messages are marked as read after viewing
+    - Each message includes the author, content, and timestamp
+
+    After reading messages, you should respond appropriately using the relevant function based on the job phase and context.
+  `,
   args: [
     {
       name: 'chatId',

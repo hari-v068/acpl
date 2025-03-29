@@ -27,7 +27,18 @@ type RequestArgs = z.infer<typeof RequestArgsSchema>;
 export const request = new GameFunction({
   name: 'request',
   description: 'Request a service from a provider',
-  hint: 'Use this function to request a service or purchase an item from a provider.',
+  hint: `
+    Use this function to initiate a new service request or purchase from a provider. Important notes:
+
+    - You cannot request from yourself
+    - You cannot use this to sell items (only to buy)
+    - The provider must have the item in their catalog
+    - You cannot have any active jobs with the provider
+    - All fields (quantity, price, requirements) are required
+    - The request will create a new job in REQUEST phase
+
+    The provider will need to either accept or reject your request before proceeding to negotiation.
+  `,
   args: [
     {
       name: 'providerId',
