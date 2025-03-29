@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import { db } from '@acpl/db/client';
+import { db } from '../src/db';
 import {
   agents,
   chats,
@@ -10,7 +10,7 @@ import {
   messages,
   providers,
   wallets,
-} from '@acpl/db/schema';
+} from '../src/schema';
 import { sql } from 'drizzle-orm';
 
 async function resetSupabaseDatabase(mode: 'soft' | 'hard' = 'soft') {

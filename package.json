@@ -7,8 +7,12 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
-    "db:reset": "tsx scripts/db-reset.ts",
-    "db:reset:hard": "tsx scripts/db-reset.ts --hard"
+    "db:reset": "pnpm --filter @acpl/db reset",
+    "db:reset:hard": "pnpm --filter @acpl/db reset:hard"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.41.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@tsconfig/node-lts": "^22.0.1",
@@ -22,11 +26,5 @@
   "packageManager": "pnpm@9.0.0",
   "engines": {
     "node": ">=18"
-  },
-  "dependencies": {
-    "@acpl/db": "workspace:*",
-    "@acpl/types": "workspace:*",
-    "drizzle-orm": "^0.41.0",
-    "zod": "^3.24.2"
   }
 }
