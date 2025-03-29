@@ -8,8 +8,8 @@ import {
   messageQueries,
   walletQueries,
 } from '@acpl/db/queries';
+import { JobPhases } from '@acpl/types';
 import { GameFunction } from '@virtuals-protocol/game';
-import { JobPhases } from '../../../../../types/src/job-phases';
 
 export const evaluateDocument = new GameFunction({
   name: 'evaluate_document',
