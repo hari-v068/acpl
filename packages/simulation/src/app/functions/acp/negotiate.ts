@@ -200,6 +200,11 @@ export const negotiate = new GameFunction({
           });
 
         case 'COUNTER':
+          // Clear any existing agreements when new terms are proposed
+          await jobQueries.updateMetadata(jobId, {
+            agreement: {},
+          });
+
           await jobItemQueries.update(jobItem.id, {
             quantity: proposedTerms?.quantity,
             pricePerUnit: proposedTerms?.pricePerUnit,
@@ -231,15 +236,36 @@ export const negotiate = new GameFunction({
               'Cannot agree to terms that differ from current proposal. Use COUNTER to propose new terms first.',
             );
           }
-          // Check if last message was from this agent
-          const messages = await messageQueries.getByChatId(chat.id);
-          const lastMessage = messages[0];
-          if (lastMessage?.authorId === agentId) {
-            return gameHelper.function.response.failed(
-              'You cannot agree to your own counter-offer. Wait for your counterpart to respond.',
-            );
-          }
-          if (agentId === job.providerId) {
+
+          // Track agreement in job metadata
+          const currentAgreement = job.metadata?.agreement || {};
+          const updatedAgreement = {
+            ...currentAgreement,
+            [agentId]: {
+              agreedAt: new Date().toISOString(),
+              terms: proposedTerms,
+            },
+          };
+
+          await jobQueries.updateMetadata(jobId, {
+            ...job.metadata,
+            agreement: updatedAgreement,
+          });
+
+          // Check if both parties have agreed to the same terms
+          const otherPartyId =
+            agentId === job.providerId ? job.clientId : job.providerId;
+          const otherPartyAgreement = updatedAgreement[otherPartyId];
+          const bothPartiesAgreed =
+            otherPartyAgreement &&
+            otherPartyAgreement.terms.quantity === proposedTerms.quantity &&
+            otherPartyAgreement.terms.pricePerUnit ===
+              proposedTerms.pricePerUnit &&
+            otherPartyAgreement.terms.requirements ===
+              proposedTerms.requirements;
+
+          // If both parties agree, move to TRANSACTION phase
+          if (bothPartiesAgreed) {
             await jobQueries.updatePhase(jobId, JobPhases.Enum.TRANSACTION);
             // Send agreement message
             const agreeMessageId = `message-${chat.id}-${Date.now()}`;
@@ -247,25 +273,26 @@ export const negotiate = new GameFunction({
               id: agreeMessageId,
               chatId: chat.id,
               authorId: agentId,
-              message,
+              message: `${message} (Final agreement reached - proceeding to payment)`,
             });
             return gameHelper.function.response.success(
-              'Agreement reached - proceeding to payment',
+              'Mutual agreement reached - proceeding to payment',
               {
                 nextPhase: JobPhases.Enum.TRANSACTION,
               },
             );
           }
-          // Send agreement message for client
+
+          // Send agreement message while waiting for other party
           const agreeMessageId = `message-${chat.id}-${Date.now()}`;
           await messageQueries.create({
             id: agreeMessageId,
             chatId: chat.id,
             authorId: agentId,
-            message,
+            message: `${message} (Waiting for other party's agreement)`,
           });
           return gameHelper.function.response.success(
-            'Agreement noted - waiting for provider confirmation',
+            'Agreement recorded - waiting for other party to agree',
           );
 
         default:

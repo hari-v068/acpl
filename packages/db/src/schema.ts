@@ -101,6 +101,18 @@ export const jobs = pgTable(
     phase: jobPhaseEnum('job_phase').notNull().default('REQUEST'),
     expiredAt: timestamp('expired_at', { withTimezone: true }),
     transactionHash: text('transaction_hash'),
+    metadata: jsonb('metadata').$type<{
+      agreement?: {
+        [agentId: string]: {
+          agreedAt: string;
+          terms: {
+            quantity: number;
+            pricePerUnit: string;
+            requirements: string;
+          };
+        };
+      };
+    }>(),
   },
   (table) => [
     index('idx_jobs_phase').on(table.phase),

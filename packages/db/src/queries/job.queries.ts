@@ -131,6 +131,30 @@ export const jobQueries = {
     return updated;
   },
 
+  // Update job metadata
+  updateMetadata: async (
+    id: string,
+    metadata: {
+      agreement?: {
+        [agentId: string]: {
+          agreedAt: string;
+          terms: {
+            quantity: number;
+            pricePerUnit: string;
+            requirements: string;
+          };
+        };
+      };
+    },
+  ): Promise<Job | undefined> => {
+    const [updated] = await db
+      .update(jobs)
+      .set({ metadata })
+      .where(eq(jobs.id, id))
+      .returning();
+    return updated;
+  },
+
   // Delete a job
   delete: async (id: string): Promise<Job | undefined> => {
     const [deleted] = await db.delete(jobs).where(eq(jobs.id, id)).returning();
