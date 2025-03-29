@@ -113,6 +113,30 @@ importers:
         specifier: ^5
         version: 5.8.2
 
+  apps/simulation:
+    dependencies:
+      '@acpl/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@acpl/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@acpl/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@ai-sdk/google':
+        specifier: ^1.2.2
+        version: 1.2.2(zod@3.24.2)
+      '@virtuals-protocol/game':
+        specifier: ^0.1.11
+        version: 0.1.11
+      ai:
+        specifier: ^4.2.2
+        version: 4.2.2(react@19.0.0)(zod@3.24.2)
+      drizzle-orm:
+        specifier: ^0.41.0
+        version: 0.41.0(@opentelemetry/api@1.9.0)(gel@2.0.1)(postgres@3.4.5)
+
   packages/config:
     dependencies:
       dotenv:
@@ -140,30 +164,6 @@ importers:
       drizzle-kit:
         specifier: ^0.30.5
         version: 0.30.5
-
-  packages/simulation:
-    dependencies:
-      '@acpl/config':
-        specifier: workspace:*
-        version: link:../config
-      '@acpl/db':
-        specifier: workspace:*
-        version: link:../db
-      '@acpl/types':
-        specifier: workspace:*
-        version: link:../types
-      '@ai-sdk/google':
-        specifier: ^1.2.2
-        version: 1.2.2(zod@3.24.2)
-      '@virtuals-protocol/game':
-        specifier: ^0.1.11
-        version: 0.1.11
-      ai:
-        specifier: ^4.2.2
-        version: 4.2.2(react@19.0.0)(zod@3.24.2)
-      drizzle-orm:
-        specifier: ^0.41.0
-        version: 0.41.0(@opentelemetry/api@1.9.0)(gel@2.0.1)(postgres@3.4.5)
 
   packages/types: {}
 
