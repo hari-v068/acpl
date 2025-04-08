@@ -138,10 +138,17 @@ export const pay = new GameFunction({
         message: `${message} (Transaction Hash: ${transactionHash})`,
       });
 
-      // Update job with transaction hash
-      await jobQueries.updateTransactionHash(jobId, transactionHash);
+      // Update job with transaction hash and escrow amount
+      const updatedJob = await jobQueries.updateTransactionHash(
+        job.id,
+        transactionHash,
+      );
+      if (!updatedJob) {
+        throw new Error('Failed to update job with transaction hash');
+      }
+      await jobQueries.updateEscrowAmount(job.id, totalPayment);
 
-      // Update client's wallet balance (this should be done in the smart contract)
+      // Update client's wallet balance
       await walletQueries.subtractBalance(clientWallet.id, totalPayment);
 
       return gameHelper.function.response.success(

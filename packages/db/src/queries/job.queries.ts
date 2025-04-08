@@ -119,6 +119,19 @@ export const jobQueries = {
     return updated;
   },
 
+  // Update job escrow amount
+  updateEscrowAmount: async (
+    id: string,
+    escrowAmount: string,
+  ): Promise<Job | undefined> => {
+    const [updated] = await db
+      .update(jobs)
+      .set({ escrowAmount })
+      .where(eq(jobs.id, id))
+      .returning();
+    return updated;
+  },
+
   // Update job expiry
   updateExpiry: async (
     id: string,
