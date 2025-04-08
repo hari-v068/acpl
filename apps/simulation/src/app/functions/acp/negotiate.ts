@@ -141,7 +141,7 @@ export const negotiate = new GameFunction({
       }
 
       // Must be in NEGOTIATION phase
-      if (job.phase !== 'NEGOTIATION') {
+      if (job.phase !== JobPhases.Enum.NEGOTIATION) {
         return gameHelper.function.response.failed(
           `Cannot negotiate in ${job.phase} phase`,
         );

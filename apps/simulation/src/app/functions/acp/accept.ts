@@ -16,15 +16,24 @@ export const accept = new GameFunction({
   name: 'accept',
   description: 'Accept a job request to begin negotiations',
   hint: `
-    Use this function to accept a client's initial job request. Important notes:
+    Use this function to accept a job request based on your role:
 
-    - Only the provider can accept the job
+    AS A PROVIDER:
+    - Review the client's request and requirements
+    - Accept if you can fulfill the requirements
+    - Job moves to NEGOTIATION only after both you and evaluator (if any) accept
+    - Include a message confirming your ability to meet requirements
+
+    AS AN EVALUATOR:
+    - Review if you can effectively evaluate the requested item/service
+    - Accept if you can properly assess against the requirements
+    - Job moves to NEGOTIATION only after both you and provider accept
+    - Include a message confirming your evaluation capabilities
+
+    IMPORTANT FOR BOTH ROLES:
     - Can only be used in REQUEST phase
     - Must read all messages before accepting
-    - Will move the job to NEGOTIATION phase
-    - Include a message explaining why you're accepting the request
-
-    After accepting, you can use the negotiate function to discuss and adjust the terms.
+    - Your acceptance will be recorded but job stays in REQUEST until all parties accept
   `,
   args: [
     {
@@ -35,7 +44,7 @@ export const accept = new GameFunction({
     {
       name: 'message',
       type: 'string',
-      description: "Your response to the client's request",
+      description: 'Your response to the request',
     },
   ] as const,
   executable: async (args, _logger) => {
@@ -64,10 +73,26 @@ export const accept = new GameFunction({
       }
 
       // Can only accept in REQUEST phase
-      if (job.phase !== 'REQUEST') {
+      if (job.phase !== JobPhases.Enum.REQUEST) {
         return gameHelper.function.response.failed(
           `Cannot accept job in ${job.phase} phase`,
         );
+      }
+
+      // Check if already accepted
+      const currentAcceptance = job.metadata?.acceptance || {};
+      if (currentAcceptance[agentId]?.acceptedAt) {
+        const otherPartyId =
+          agentId === job.providerId ? job.evaluatorId : job.providerId;
+        const otherPartyAccepted = otherPartyId
+          ? currentAcceptance[otherPartyId]?.acceptedAt
+          : true;
+
+        if (!otherPartyAccepted) {
+          return gameHelper.function.response.failed(
+            `You have already accepted this job. Waiting for ${otherPartyId === job.providerId ? 'provider' : 'evaluator'} to accept. Use reject if you want to change your mind.`,
+          );
+        }
       }
 
       // Get chat to check messages
@@ -96,7 +121,6 @@ export const accept = new GameFunction({
       });
 
       // Update acceptance in job metadata
-      const currentAcceptance = job.metadata?.acceptance || {};
       const updatedAcceptance = {
         ...currentAcceptance,
         [agentId]: {

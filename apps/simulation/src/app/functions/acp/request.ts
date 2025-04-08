@@ -7,6 +7,7 @@ import {
   providerQueries,
   agentQueries,
 } from '@acpl/db/queries';
+import { JobPhases } from '@acpl/types';
 import { GameFunction } from '@virtuals-protocol/game';
 import { z } from 'zod';
 
@@ -32,28 +33,41 @@ export const request = new GameFunction({
   name: 'request',
   description: 'Request a service from a provider',
   hint: `
-    Use this function to initiate a new service request or purchase from a provider. Important notes:
+    Use this function to initiate a new service request or purchase. The process involves:
 
-    - You cannot request from yourself
-    - You cannot use this to sell items (only to buy)
-    - The provider must have the item in their catalog
-    - You cannot have any active jobs with the provider
-    - All fields (quantity, price, requirements) are required
-    - You must specify an evaluator ID (use "NONE" if you don't want an evaluator)
-    - The request will create a new job in REQUEST phase
+    YOUR ROLE AS CLIENT:
+    - Specify what you want to buy (must be in provider's catalog)
+    - Set initial terms (quantity, price, requirements)
+    - Choose whether to involve an evaluator (recommended)
+    - Cannot request from yourself or have active jobs with same provider
 
-    The provider and evaluator (if specified) will need to either accept or reject your request before proceeding to negotiation.
+    PROVIDER'S ROLE:
+    - Will review your request and requirements
+    - Must accept before proceeding to negotiation
+    - Can reject if unable to fulfill requirements
+
+    EVALUATOR'S ROLE (if specified):
+    - Will review if they can properly evaluate the item/service
+    - Must accept before proceeding to negotiation
+    - Can reject if unable to assess properly
+    - Recommended for:
+      * Quality assurance of delivered items
+      * Independent verification of requirements
+      * Protection against unsatisfactory deliveries
+      * Professional assessment of complex items
+
+    PROCESS FLOW:
+    1. Your request creates a new job in REQUEST phase
+    2. Both provider and evaluator (if specified) must respond
+    3. Job moves to NEGOTIATION only after all parties accept
+    4. If either party rejects, job moves to REJECTED phase
+
+    Note: Specify "NONE" for evaluatorId only for simple, low-risk transactions
   `,
   args: [
     {
       name: 'providerId',
       description: 'ID of the provider agent',
-      type: 'string',
-    },
-    {
-      name: 'evaluatorId',
-      description:
-        'ID of the evaluator agent (use "NONE" if no evaluator desired)',
       type: 'string',
     },
     {
@@ -79,6 +93,12 @@ export const request = new GameFunction({
     {
       name: 'message',
       description: 'Message to send to the provider',
+      type: 'string',
+    },
+    {
+      name: 'evaluatorId',
+      description:
+        'ID of the evaluator agent (use "NONE" if no evaluator desired, although it is recommended to use an evaluator for better transaction security)',
       type: 'string',
     },
   ] as const,
@@ -170,7 +190,11 @@ export const request = new GameFunction({
       const hasActiveJob = [
         ...activeJobsAsClient,
         ...activeJobsAsProvider,
-      ].some((job) => job.phase !== 'COMPLETE' && job.phase !== 'REJECTED');
+      ].some(
+        (job) =>
+          job.phase !== JobPhases.Enum.COMPLETE &&
+          job.phase !== JobPhases.Enum.REJECTED,
+      );
 
       if (hasActiveJob) {
         return gameHelper.function.response.failed(

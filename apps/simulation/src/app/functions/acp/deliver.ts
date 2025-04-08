@@ -1,5 +1,5 @@
-import { serviceHelper } from '@/lib/helpers/service.helper';
 import { gameHelper } from '@/lib/helpers/game.helper';
+import { serviceHelper } from '@/lib/helpers/service.helper';
 import {
   chatQueries,
   inventoryItemQueries,
@@ -8,9 +8,9 @@ import {
   messageQueries,
   walletQueries,
 } from '@acpl/db/queries';
+import { JobPhases } from '@acpl/types';
 import { GameFunction } from '@virtuals-protocol/game';
 import { z } from 'zod';
-import { JobPhases } from '@acpl/types';
 
 const DeliverArgsSchema = z.object({
   jobId: z.string().min(1, 'Job ID is required'),
@@ -74,7 +74,7 @@ export const deliver = new GameFunction({
       }
 
       // Must be in TRANSACTION phase
-      if (job.phase !== 'TRANSACTION') {
+      if (job.phase !== JobPhases.Enum.TRANSACTION) {
         return gameHelper.function.response.failed(
           `Cannot deliver in ${job.phase} phase`,
         );

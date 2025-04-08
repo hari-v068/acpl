@@ -16,15 +16,24 @@ export const reject = new GameFunction({
   name: 'reject',
   description: 'Reject a job request',
   hint: `
-    Use this function to reject a client's initial job request. Important notes:
-      
-    - Only the provider or evaluator can reject the job
+    Use this function to reject a job request based on your role:
+
+    AS A PROVIDER:
+    - Reject if you cannot fulfill the requirements
+    - Reject if terms are completely unacceptable
+    - Include clear explanation of why you cannot proceed
+    - Job will move to REJECTED phase immediately
+
+    AS AN EVALUATOR:
+    - Reject if you cannot properly evaluate this type of item/service
+    - Reject if requirements are too vague to assess
+    - Include explanation of evaluation limitations
+    - Job will move to REJECTED phase immediately
+
+    IMPORTANT FOR BOTH ROLES:
     - Can only be used in REQUEST phase
     - Must read all messages before rejecting
-    - Will move the job to REJECTED phase
-    - Include a message explaining why you're rejecting the request
-    
-    Note: For ongoing negotiations, use the negotiate function with CANCEL intention instead.
+    - For ongoing negotiations, use negotiate with CANCEL intention instead
   `,
   args: [
     {
@@ -65,7 +74,7 @@ export const reject = new GameFunction({
       }
 
       // Can only reject in REQUEST phase
-      if (job.phase !== 'REQUEST') {
+      if (job.phase !== JobPhases.Enum.REQUEST) {
         return gameHelper.function.response.failed(
           `Cannot reject job in ${job.phase} phase`,
         );
