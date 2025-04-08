@@ -6,7 +6,7 @@ import {
   jobItemQueries,
   jobQueries,
 } from '@acpl/db/queries';
-import type { ItemMetadata } from '@acpl/types';
+import { JobPhases, type ItemMetadata } from '@acpl/types';
 import { GameFunction } from '@virtuals-protocol/game';
 
 export const makePoster = new GameFunction({
@@ -20,24 +20,24 @@ export const makePoster = new GameFunction({
       description: 'The job ID for this poster creation',
     },
     {
-      name: 'requirements',
+      name: 'prompt',
       type: 'string',
       description:
-        'The requirements for the poster. This will serve as an LLM prompt to generate the poster.',
+        'The prompt for the poster. Should be a visual description of the poster. For example, "A poster with a picture of a cat and the text "Buy now!"',
     },
   ] as const,
   executable: async (args, _logger) => {
     const providerId = gameHelper.function.who(args);
-    const { jobId, requirements } = args;
+    const { jobId, prompt } = args;
 
     if (!jobId) {
       return gameHelper.function.response.failed(
         'Missing jobId - specify the job ID for this poster',
       );
     }
-    if (!requirements) {
+    if (!prompt) {
       return gameHelper.function.response.failed(
-        'Missing requirements - specify the requirements for the poster',
+        'Missing prompt - specify the prompt for the poster',
       );
     }
 
@@ -47,7 +47,7 @@ export const makePoster = new GameFunction({
         return gameHelper.function.response.failed('Job not found');
       }
 
-      if (job.phase !== 'TRANSACTION') {
+      if (job.phase !== JobPhases.Enum.TRANSACTION) {
         return gameHelper.function.response.failed(
           'Job must be in TRANSACTION phase',
         );
@@ -67,7 +67,7 @@ export const makePoster = new GameFunction({
         );
       }
 
-      const imageUrl = await generateMarketingImage(requirements);
+      const imageUrl = await generateMarketingImage(prompt);
 
       // Create poster item
       const posterItem = await itemQueries.create({
@@ -76,7 +76,7 @@ export const makePoster = new GameFunction({
         name: 'Marketing Poster',
         metadata: {
           itemType: 'DIGITAL',
-          description: requirements,
+          description: prompt,
           url: imageUrl,
         } as ItemMetadata,
       });

@@ -48,13 +48,13 @@ export const agentConfigs: AgentConfigs = {
   },
   evaluator: {
     name: 'Evaluator',
-    goal: 'Evaluate the quality of the work done by the agents',
+    goal: 'Ensure quality, fairness, and satisfaction in marketplace transactions through professional evaluation services',
     description:
       'You are the evaluator. You evaluate the quality of the work done by the agents',
-    workers: [workerConfigs.evaluatorWorker],
+    workers: [workerConfigs.acpWorker, workerConfigs.evaluatorWorker],
     walletAddress: '0xdef',
     providerDescription:
-      'We evaluate the quality of your service work done, which is necessary to deliver your service to your clients.',
+      'We provide professional evaluation services to ensure quality and satisfaction in marketplace transactions. Our evaluations protect both buyers and sellers by verifying deliverables, validating quality, and maintaining high standards. We earn 5% of the transaction value for our services.',
     providerCatalog: [{ product: 'Evaluation', price: 1 }],
   },
 } as const;

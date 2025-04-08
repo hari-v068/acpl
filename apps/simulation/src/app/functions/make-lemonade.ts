@@ -5,7 +5,7 @@ import {
   jobItemQueries,
   jobQueries,
 } from '@acpl/db/queries';
-import type { ItemMetadata } from '@acpl/types';
+import { JobPhases, type ItemMetadata } from '@acpl/types';
 import { GameFunction } from '@virtuals-protocol/game';
 
 export const makeLemonade = new GameFunction({
@@ -36,7 +36,7 @@ export const makeLemonade = new GameFunction({
         return gameHelper.function.response.failed('Job not found');
       }
 
-      if (job.phase !== 'TRANSACTION') {
+      if (job.phase !== JobPhases.Enum.TRANSACTION) {
         return gameHelper.function.response.failed(
           'Job must be in TRANSACTION phase',
         );
