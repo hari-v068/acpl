@@ -5,12 +5,16 @@ import {
   jobQueries,
   messageQueries,
   providerQueries,
+  agentQueries,
 } from '@acpl/db/queries';
 import { GameFunction } from '@virtuals-protocol/game';
 import { z } from 'zod';
 
 const RequestArgsSchema = z.object({
   providerId: z.string().min(1, 'Provider ID is required'),
+  evaluatorId: z
+    .string()
+    .min(1, 'Evaluator ID is required (use "NONE" if no evaluator desired)'),
   itemName: z.string().min(1, 'Item name is required'),
   quantity: z.number().int().positive('Quantity must be a positive integer'),
   pricePerUnit: z.coerce
@@ -35,14 +39,21 @@ export const request = new GameFunction({
     - The provider must have the item in their catalog
     - You cannot have any active jobs with the provider
     - All fields (quantity, price, requirements) are required
+    - You must specify an evaluator ID (use "NONE" if you don't want an evaluator)
     - The request will create a new job in REQUEST phase
 
-    The provider will need to either accept or reject your request before proceeding to negotiation.
+    The provider and evaluator (if specified) will need to either accept or reject your request before proceeding to negotiation.
   `,
   args: [
     {
       name: 'providerId',
       description: 'ID of the provider agent',
+      type: 'string',
+    },
+    {
+      name: 'evaluatorId',
+      description:
+        'ID of the evaluator agent (use "NONE" if no evaluator desired)',
       type: 'string',
     },
     {
@@ -84,6 +95,7 @@ export const request = new GameFunction({
 
     const {
       providerId,
+      evaluatorId,
       itemName,
       quantity,
       pricePerUnit,
@@ -92,22 +104,43 @@ export const request = new GameFunction({
     } = parseResult.data;
 
     try {
+      // Validate evaluator if provided and not "NONE"
+      if (evaluatorId && evaluatorId !== 'NONE') {
+        const evaluator = await agentQueries.getById(evaluatorId);
+        if (!evaluator) {
+          return gameHelper.function.response.failed('Evaluator not found');
+        }
+      }
+
       // Check if requesting from self
       if (providerId === clientId) {
         return gameHelper.function.response.failed(
           'Cannot request service from yourself.',
         );
       }
+
+      // Check if trying to request from evaluator
+      if (providerId === 'agent-evaluator') {
+        return gameHelper.function.response.failed(
+          'Cannot request services directly from the evaluator. Evaluators can only be assigned to evaluate jobs.',
+        );
+      }
+
+      // Check if provider exists in providers table
+      const provider = await providerQueries.getByAgentId(providerId);
+      if (!provider) {
+        return gameHelper.function.response.failed(
+          'The specified provider does not exist.',
+        );
+      }
+
       // Disallow selling items using this function
       const client = await providerQueries.getByAgentId(clientId);
-      const provider = await providerQueries.getByAgentId(providerId);
-      const clientCatalog = client?.catalog;
-      const providerCatalog = provider?.catalog;
 
-      const isItemInClientCatalog = clientCatalog?.some(
+      const isItemInClientCatalog = client?.catalog.some(
         (item) => item.product === itemName,
       );
-      const isItemInProviderCatalog = providerCatalog?.some(
+      const isItemInProviderCatalog = provider.catalog.some(
         (item) => item.product === itemName,
       );
 
@@ -151,6 +184,7 @@ export const request = new GameFunction({
         id: jobId,
         clientId,
         providerId,
+        evaluatorId: evaluatorId === 'NONE' ? null : evaluatorId,
         phase: 'REQUEST',
       });
 
@@ -172,6 +206,7 @@ export const request = new GameFunction({
         jobId: job.id as string,
         clientId,
         providerId,
+        evaluatorId: evaluatorId === 'NONE' ? null : evaluatorId,
       });
 
       const messageId = `message-${chatId}-${Date.now()}`;

@@ -18,7 +18,7 @@ export const reject = new GameFunction({
   hint: `
     Use this function to reject a client's initial job request. Important notes:
       
-    - Only the provider can reject the job
+    - Only the provider or evaluator can reject the job
     - Can only be used in REQUEST phase
     - Must read all messages before rejecting
     - Will move the job to REJECTED phase
@@ -39,7 +39,7 @@ export const reject = new GameFunction({
     },
   ] as const,
   executable: async (args, _logger) => {
-    const providerId = gameHelper.function.who(args);
+    const agentId = gameHelper.function.who(args);
 
     const parseResult = RejectArgsSchema.safeParse(args);
     if (!parseResult.success) {
@@ -57,10 +57,10 @@ export const reject = new GameFunction({
         return gameHelper.function.response.failed('Job not found');
       }
 
-      // Verify this is the provider rejecting
-      if (job.providerId !== providerId) {
+      // Verify this is either the provider or evaluator
+      if (job.providerId !== agentId && job.evaluatorId !== agentId) {
         return gameHelper.function.response.failed(
-          'Only the provider can reject this job',
+          'Only the provider or evaluator can reject this job',
         );
       }
 
@@ -79,7 +79,7 @@ export const reject = new GameFunction({
 
       const hasUnreadMessages = serviceHelper.chat.hasUnreadMessages(
         chat,
-        providerId,
+        agentId,
       );
       if (hasUnreadMessages) {
         return gameHelper.function.response.failed(
@@ -92,8 +92,23 @@ export const reject = new GameFunction({
       await messageQueries.create({
         id: messageId,
         chatId: chat.id,
-        authorId: providerId,
+        authorId: agentId,
         message,
+      });
+
+      // Update rejection in job metadata
+      const currentAcceptance = job.metadata?.acceptance || {};
+      const updatedAcceptance = {
+        ...currentAcceptance,
+        [agentId]: {
+          ...currentAcceptance[agentId],
+          rejectedAt: new Date().toISOString(),
+        },
+      };
+
+      await jobQueries.updateMetadata(jobId, {
+        ...job.metadata,
+        acceptance: updatedAcceptance,
       });
 
       // Update job phase to REJECTED

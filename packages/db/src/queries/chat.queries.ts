@@ -9,6 +9,7 @@ export const chatQueries = {
     jobId: string;
     clientId: string;
     providerId: string;
+    evaluatorId: string | null;
     summary?: string;
   }): Promise<Chat> => {
     const [chat] = await db.insert(chats).values(data).returning();

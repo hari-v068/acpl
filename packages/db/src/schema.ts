@@ -97,11 +97,19 @@ export const jobs = pgTable(
     providerId: text('provider_id')
       .references(() => agents.id)
       .notNull(),
+    evaluatorId: text('evaluator_id').references(() => agents.id),
     budget: decimal('budget_amount', { precision: 20, scale: 2 }),
     phase: jobPhaseEnum('job_phase').notNull().default('REQUEST'),
     expiredAt: timestamp('expired_at', { withTimezone: true }),
     transactionHash: text('transaction_hash'),
+    escrowAmount: decimal('escrow_amount', { precision: 20, scale: 2 }),
     metadata: jsonb('metadata').$type<{
+      acceptance?: {
+        [agentId: string]: {
+          acceptedAt: string;
+          rejectedAt?: string;
+        };
+      };
       agreement?: {
         [agentId: string]: {
           agreedAt: string;
@@ -118,6 +126,7 @@ export const jobs = pgTable(
     index('idx_jobs_phase').on(table.phase),
     index('idx_jobs_client_id').on(table.clientId),
     index('idx_jobs_provider_id').on(table.providerId),
+    index('idx_jobs_evaluator_id').on(table.evaluatorId),
   ],
 );
 
@@ -158,6 +167,7 @@ export const chats = pgTable(
     providerId: text('provider_id')
       .references(() => agents.id)
       .notNull(),
+    evaluatorId: text('evaluator_id').references(() => agents.id),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -276,6 +286,11 @@ export const jobRelations = relations(jobs, ({ one }) => ({
     fields: [jobs.providerId],
     references: [agents.id],
     relationName: 'provider',
+  }),
+  evaluator: one(agents, {
+    fields: [jobs.evaluatorId],
+    references: [agents.id],
+    relationName: 'evaluator',
   }),
   jobItem: one(jobItems),
   chat: one(chats, {

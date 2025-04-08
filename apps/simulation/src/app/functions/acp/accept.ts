@@ -39,7 +39,7 @@ export const accept = new GameFunction({
     },
   ] as const,
   executable: async (args, _logger) => {
-    const providerId = gameHelper.function.who(args);
+    const agentId = gameHelper.function.who(args);
 
     const parseResult = AcceptArgsSchema.safeParse(args);
     if (!parseResult.success) {
@@ -51,16 +51,15 @@ export const accept = new GameFunction({
     const { jobId, message } = parseResult.data;
 
     try {
-      // Get job details first
       const job = await jobQueries.getById(jobId);
       if (!job) {
         return gameHelper.function.response.failed('Job not found');
       }
 
-      // Verify this is the provider accepting
-      if (job.providerId !== providerId) {
+      // Verify this is either the provider or evaluator
+      if (job.providerId !== agentId && job.evaluatorId !== agentId) {
         return gameHelper.function.response.failed(
-          'Only the provider can accept this job',
+          'Only the provider or evaluator can accept this job',
         );
       }
 
@@ -79,7 +78,7 @@ export const accept = new GameFunction({
 
       const hasUnreadMessages = serviceHelper.chat.hasUnreadMessages(
         chat,
-        providerId,
+        agentId,
       );
       if (hasUnreadMessages) {
         return gameHelper.function.response.failed(
@@ -87,22 +86,52 @@ export const accept = new GameFunction({
         );
       }
 
+      // Send acceptance message
       const messageId = `message-${chat.id}-${Date.now()}`;
       await messageQueries.create({
         id: messageId,
         chatId: chat.id,
-        authorId: providerId,
-        message: message,
+        authorId: agentId,
+        message,
       });
 
-      // Update job phase to NEGOTIATION
-      await jobQueries.updatePhase(jobId, JobPhases.Enum.NEGOTIATION);
+      // Update acceptance in job metadata
+      const currentAcceptance = job.metadata?.acceptance || {};
+      const updatedAcceptance = {
+        ...currentAcceptance,
+        [agentId]: {
+          acceptedAt: new Date().toISOString(),
+        },
+      };
+
+      await jobQueries.updateMetadata(jobId, {
+        ...job.metadata,
+        acceptance: updatedAcceptance,
+      });
+
+      // Check if all required parties have accepted
+      const providerAccepted = updatedAcceptance[job.providerId]?.acceptedAt;
+      const evaluatorAccepted = job.evaluatorId
+        ? updatedAcceptance[job.evaluatorId]?.acceptedAt
+        : true;
+
+      if (providerAccepted && evaluatorAccepted) {
+        // Move to NEGOTIATION phase if all parties have accepted
+        await jobQueries.updatePhase(jobId, JobPhases.Enum.NEGOTIATION);
+        return gameHelper.function.response.success(
+          'All parties have accepted - proceeding to negotiation',
+          {
+            jobId,
+            nextPhase: JobPhases.Enum.NEGOTIATION,
+          },
+        );
+      }
 
       return gameHelper.function.response.success(
-        'Started negotiation with client',
+        'Acceptance recorded - waiting for other party',
         {
           jobId,
-          nextPhase: JobPhases.Enum.NEGOTIATION,
+          currentPhase: JobPhases.Enum.REQUEST,
         },
       );
     } catch (e) {

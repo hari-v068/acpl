@@ -1,5 +1,5 @@
 import { gameHelper } from '@/lib/helpers/game.helper';
-import { chatQueries, messageQueries } from '@acpl/db/queries';
+import { chatQueries, messageQueries, jobQueries } from '@acpl/db/queries';
 import { GameFunction } from '@virtuals-protocol/game';
 import { z } from 'zod';
 
@@ -48,17 +48,28 @@ export const read = new GameFunction({
 
     try {
       const chat = await chatQueries.getById(chatId);
-      if (!chat || (chat.clientId !== agentId && chat.providerId !== agentId)) {
+      if (!chat) {
+        return gameHelper.function.response.failed('Chat not found');
+      }
+
+      const job = await jobQueries.getById(chat.jobId);
+      if (!job) {
+        return gameHelper.function.response.failed('Job not found');
+      }
+
+      if (
+        chat.clientId !== agentId &&
+        chat.providerId !== agentId &&
+        job.evaluatorId !== agentId
+      ) {
         return gameHelper.function.response.failed(
-          'Chat not found or not authorized',
+          'Not authorized to read this chat',
         );
       }
 
-      const messages = await messageQueries.getByChatId(chatId);
-
-      // Update lastReadBy to mark messages as read
       await chatQueries.updateLastReadBy(chatId, agentId);
 
+      const messages = await messageQueries.getByChatId(chatId);
       return gameHelper.function.response.success('Messages read', {
         messages: messages.map((message) => ({
           id: message.id,

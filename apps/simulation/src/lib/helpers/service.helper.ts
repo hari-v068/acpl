@@ -61,48 +61,6 @@ export const serviceHelper = {
         throw new Error(`Agent ${agentId} not found`);
       }
 
-      // Special case for evaluator - only return jobs in EVALUATION phase
-      if (agentId === 'agent-evaluator') {
-        const evaluationJobs = await db.query.jobs.findMany({
-          where: eq(jobs.phase, 'EVALUATION'),
-          with: {
-            jobItem: true,
-          },
-        });
-
-        return {
-          agent: {
-            id: agent.id,
-            name: agent.name,
-            goal: agent.goal,
-            description: agent.description,
-          },
-          wallet: {
-            id: agent.wallet.id,
-            balance: agent.wallet.balance.toString(),
-            address: agent.wallet.address,
-          },
-          inventory: [], // Evaluator doesn't need inventory
-          jobs: evaluationJobs.map((job) => ({
-            id: job.id,
-            role: 'evaluator',
-            counterpartId: job.providerId,
-            phase: job.phase,
-            budget: job.budget?.toString(),
-            transactionHash: job.transactionHash ?? undefined,
-            expiredAt: job.expiredAt?.toISOString() ?? null,
-            item: {
-              id: job.jobItem?.id,
-              name: job.jobItem?.itemName,
-              quantity: job.jobItem?.quantity,
-              pricePerUnit: job.jobItem?.pricePerUnit?.toString(),
-              inventoryItemId: job.jobItem?.inventoryItemId ?? undefined,
-            },
-          })),
-          chats: [], // Evaluator doesn't need chat history
-        };
-      }
-
       // Regular agent state handling
       const inventory = await db.query.inventoryItems.findMany({
         where: eq(inventoryItems.agentId, agentId),
@@ -111,9 +69,13 @@ export const serviceHelper = {
         },
       });
 
-      // Get all jobs where agent is either client or provider
+      // Get all jobs where agent is either client, provider, or evaluator
       const agentJobs = await db.query.jobs.findMany({
-        where: or(eq(jobs.clientId, agentId), eq(jobs.providerId, agentId)),
+        where: or(
+          eq(jobs.clientId, agentId),
+          eq(jobs.providerId, agentId),
+          eq(jobs.evaluatorId, agentId),
+        ),
         with: {
           jobItem: true,
         },
@@ -121,7 +83,11 @@ export const serviceHelper = {
 
       // Get all chats with messages
       const agentChats = await db.query.chats.findMany({
-        where: or(eq(chats.clientId, agentId), eq(chats.providerId, agentId)),
+        where: or(
+          eq(chats.clientId, agentId),
+          eq(chats.providerId, agentId),
+          eq(chats.evaluatorId, agentId),
+        ),
         with: {
           job: true,
           messages: {
@@ -151,9 +117,18 @@ export const serviceHelper = {
         })),
         jobs: agentJobs.map((job) => ({
           id: job.id,
-          role: job.clientId === agentId ? 'client' : 'provider',
+          role:
+            job.clientId === agentId
+              ? 'client'
+              : job.providerId === agentId
+                ? 'provider'
+                : 'evaluator',
           counterpartId:
-            job.clientId === agentId ? job.providerId : job.clientId,
+            job.clientId === agentId
+              ? job.providerId
+              : job.providerId === agentId
+                ? job.clientId
+                : job.clientId,
           phase: job.phase,
           budget: job.budget?.toString(),
           transactionHash: job.transactionHash ?? undefined,

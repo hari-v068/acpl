@@ -9,6 +9,7 @@ export const jobQueries = {
     id: string;
     clientId: string;
     providerId: string;
+    evaluatorId?: string | null;
     budget?: string;
     phase?: string;
     expiredAt?: Date;
@@ -135,6 +136,12 @@ export const jobQueries = {
   updateMetadata: async (
     id: string,
     metadata: {
+      acceptance?: {
+        [agentId: string]: {
+          acceptedAt: string;
+          rejectedAt?: string;
+        };
+      };
       agreement?: {
         [agentId: string]: {
           agreedAt: string;
