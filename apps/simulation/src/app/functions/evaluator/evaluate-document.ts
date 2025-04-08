@@ -46,14 +46,20 @@ export const evaluateDocument = new GameFunction({
       }
 
       // Verify this is the evaluator
-      if (evaluatorId !== 'evaluator') {
+      if (evaluatorId !== 'agent-evaluator') {
         return gameHelper.function.response.failed(
           'Only the evaluator can evaluate items',
         );
       }
 
+      if (job.phase === JobPhases.Enum.REQUEST) {
+        return gameHelper.function.response.failed(
+          'This job is still waiting for your initial acceptance! Before evaluating, you need to first accept the evaluation request using the "accept" function in the acp worker. If you do not wish to evaluate this item, you can reject it using the "reject" function instead.',
+        );
+      }
+
       // Must be in EVALUATION phase
-      if (job.phase !== 'EVALUATION') {
+      if (job.phase !== JobPhases.Enum.EVALUATION) {
         return gameHelper.function.response.failed(
           `Cannot evaluate in ${job.phase} phase`,
         );
