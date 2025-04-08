@@ -6,6 +6,7 @@ import {
   jobItemQueries,
   jobQueries,
   messageQueries,
+  walletQueries,
 } from '@acpl/db/queries';
 import { GameFunction } from '@virtuals-protocol/game';
 import { z } from 'zod';
@@ -94,6 +95,15 @@ export const deliver = new GameFunction({
         );
       }
 
+      // Verify escrow amount matches the agreed price
+      const totalPrice =
+        Number(jobItem.quantity) * Number(jobItem.pricePerUnit);
+      if (Number(job.escrowAmount) !== totalPrice) {
+        return gameHelper.function.response.failed(
+          'Escrow amount does not match the agreed price',
+        );
+      }
+
       // If no inventory item is linked yet, try to link one
       if (!jobItem.inventoryItemId) {
         // Get the provider's inventory items
@@ -142,7 +152,42 @@ export const deliver = new GameFunction({
         message,
       });
 
-      // Update job phase to EVALUATION
+      // If there's no evaluator, complete the job immediately
+      if (!job.evaluatorId) {
+        // Calculate total payment
+        const totalPayment = (
+          Number(jobItem.quantity) * Number(jobItem.pricePerUnit)
+        ).toFixed(2);
+
+        // Get provider's wallet
+        const providerWallet = await walletQueries.getByAgentId(job.providerId);
+        if (!providerWallet) {
+          return gameHelper.function.response.failed(
+            'Provider wallet not found',
+          );
+        }
+
+        // Add provider's payment
+        await walletQueries.addBalance(providerWallet.id, totalPayment);
+
+        // Move item to client's inventory
+        await inventoryItemQueries.transferOwnership(
+          jobItem.inventoryItemId!,
+          job.clientId,
+        );
+
+        // Update job phase to COMPLETE
+        await jobQueries.updatePhase(jobId, JobPhases.Enum.COMPLETE);
+
+        return gameHelper.function.response.success(
+          'Item delivered and job completed',
+          {
+            nextPhase: JobPhases.Enum.COMPLETE,
+          },
+        );
+      }
+
+      // If there is an evaluator, move to EVALUATION phase
       await jobQueries.updatePhase(jobId, JobPhases.Enum.EVALUATION);
 
       return gameHelper.function.response.success(
