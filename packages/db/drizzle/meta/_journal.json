@@ -15,6 +15,13 @@
       "when": 1743228598160,
       "tag": "0001_round_marvel_boy",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1744086777392,
+      "tag": "0002_bouncy_manta",
+      "breakpoints": true
     }
   ]
 }

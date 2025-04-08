@@ -124,6 +124,7 @@ export const gameHelper = {
               flows: {
                 client: agentInstructions.clientFlow,
                 provider: agentInstructions.providerFlow,
+                evaluator: agentInstructions.evaluatorFlow,
                 activeJob: agentInstructions.activeJobFlow,
               },
               rules: agentInstructions.rules,

@@ -10,16 +10,19 @@ A lite demo to demonstrate ACP (Agent-Commerce-Protocol), previously known as Ec
 ## Getting Started
 
 1. Install dependencies:
+
 ```bash
 pnpm install
 ```
 
 2. Set up the database:
+
 ```bash
 pnpm db:reset
 ```
 
 3. Start the development servers:
+
 ```bash
 pnpm dev
 ```
