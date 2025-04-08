@@ -30,14 +30,14 @@ export const serviceHelper = {
 
         // 3. Create provider profile with ID pattern: provider-<agent-id>
         const providerId = `provider-${agentConfig.agentId}`;
-        agentConfig.agentId !== 'agent-evaluator' &&
-          agentConfig.providerDescription &&
-          (await providerQueries.create({
+        if (agentConfig.providerDescription) {
+          await providerQueries.create({
             id: providerId,
             agentId: agent.id,
             description: agentConfig.providerDescription,
             catalog: agentConfig.providerCatalog ?? [],
-          }));
+          });
+        }
 
         const gameAgent = gameHelper.agent.create({
           ...agentConfig,
@@ -133,14 +133,14 @@ export const serviceHelper = {
           budget: job.budget?.toString(),
           transactionHash: job.transactionHash ?? undefined,
           expiredAt: job.expiredAt?.toISOString() ?? null,
-          item: {
-            id: job.jobItem?.id,
-            name: job.jobItem?.itemName,
-            quantity: job.jobItem?.quantity,
-            pricePerUnit: job.jobItem?.pricePerUnit?.toString(),
-            requirements: job.jobItem?.requirements,
-            inventoryItemId: job.jobItem?.inventoryItemId ?? undefined,
-          },
+          item: job.jobItem
+            ? {
+                name: job.jobItem.itemName,
+                quantity: job.jobItem.quantity,
+                pricePerUnit: job.jobItem.pricePerUnit?.toString(),
+                requirements: job.jobItem.requirements,
+              }
+            : {},
         })),
         chats: await Promise.all(
           agentChats.map(async (chat) => {
