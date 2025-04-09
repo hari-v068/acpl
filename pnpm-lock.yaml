@@ -8,15 +8,12 @@ importers:
 
   .:
     dependencies:
-<<<<<<< HEAD
       '@acpl/db':
         specifier: workspace:*
         version: link:packages/db
       '@acpl/types':
         specifier: workspace:*
         version: link:packages/types
-=======
->>>>>>> feat/evaluator
       drizzle-orm:
         specifier: ^0.41.0
         version: 0.41.0(@opentelemetry/api@1.9.0)(gel@2.0.1)(postgres@3.4.5)
@@ -122,10 +119,6 @@ importers:
         specifier: ^5
         version: 5.8.2
 
-<<<<<<< HEAD
-  packages/config:
-    dependencies:
-=======
   apps/simulation:
     dependencies:
       '@acpl/config':
@@ -152,7 +145,6 @@ importers:
 
   packages/config:
     dependencies:
->>>>>>> feat/evaluator
       dotenv:
         specifier: ^16.4.7
         version: 16.4.7
@@ -179,7 +171,6 @@ importers:
         specifier: ^0.30.5
         version: 0.30.5
 
-<<<<<<< HEAD
   packages/simulation:
     dependencies:
       '@acpl/config':
@@ -204,8 +195,6 @@ importers:
         specifier: ^0.41.0
         version: 0.41.0(@opentelemetry/api@1.9.0)(gel@2.0.1)(postgres@3.4.5)
 
-=======
->>>>>>> feat/evaluator
   packages/types: {}
 
 packages:
@@ -1663,13 +1652,11 @@ packages:
     cpu: [x64]
     os: [win32]
 
-<<<<<<< HEAD
   '@virtuals-protocol/game@0.1.10':
     resolution: {integrity: sha512-JoKTSfO3ujOH081diK9YRdoJBoqdSu0j1sk85ULNQKzQt86jKNcOIuNkn9r+vLG+9v5g7GvJlxQ6HPwHqToVEA==}
-=======
+
   '@virtuals-protocol/game@0.1.11':
     resolution: {integrity: sha512-3/8aQi9O5jotoJbfirQ9ZeyS7st8EmI9pKjs3HN3mHwMO0zBlWFGeFf+4Y2MB31o0dPUrQuu5kKu9Nah644Akg==}
->>>>>>> feat/evaluator
 
   acorn-jsx@5.3.2:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
@@ -4487,11 +4474,14 @@ snapshots:
   '@unrs/rspack-resolver-binding-win32-x64-msvc@1.2.2':
     optional: true
 
-<<<<<<< HEAD
   '@virtuals-protocol/game@0.1.10':
-=======
+    dependencies:
+      axios: 1.8.4
+      dotenv: 16.4.7
+    transitivePeerDependencies:
+      - debug
+
   '@virtuals-protocol/game@0.1.11':
->>>>>>> feat/evaluator
     dependencies:
       axios: 1.8.4
       dotenv: 16.4.7

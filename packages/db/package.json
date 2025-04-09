@@ -27,17 +27,12 @@
   "scripts": {
     "build": "tsc",
     "db:check": "drizzle-kit check",
-<<<<<<< HEAD
-    "db:migrate": "drizzle-kit migrate",
-    "check-types": "tsc --noEmit"
-=======
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:migrate": "drizzle-kit migrate",
     "check-types": "tsc --noEmit",
     "reset": "tsx scripts/reset.ts",
     "reset:hard": "tsx scripts/reset.ts --hard"
->>>>>>> feat/evaluator
   },
   "dependencies": {
     "@acpl/config": "workspace:*",

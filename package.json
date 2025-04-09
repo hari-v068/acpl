@@ -3,13 +3,6 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
-<<<<<<< HEAD
-    "dev": "pnpm db:reset && turbo run dev",
-    "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types",
-    "db:reset": "tsx scripts/db-reset.ts"
-=======
     "dev": "turbo run dev",
     "dev:refresh": "pnpm db:reset && turbo run dev",
     "lint": "turbo run lint",
@@ -17,11 +10,6 @@
     "check-types": "turbo run check-types",
     "db:reset": "pnpm --filter @acpl/db reset",
     "db:reset:hard": "pnpm --filter @acpl/db reset:hard"
-  },
-  "dependencies": {
-    "drizzle-orm": "^0.41.0",
-    "zod": "^3.24.2"
->>>>>>> feat/evaluator
   },
   "devDependencies": {
     "@tsconfig/node-lts": "^22.0.1",
