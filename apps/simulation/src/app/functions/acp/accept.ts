@@ -111,14 +111,17 @@ export const accept = new GameFunction({
         );
       }
 
-      // Send acceptance message
-      const messageId = `message-${chat.id}-${Date.now()}`;
-      await messageQueries.create({
-        id: messageId,
-        chatId: chat.id,
-        authorId: agentId,
-        message,
-      });
+      // Only send acceptance message if this is the provider
+      if (agentId === job.providerId) {
+        // Send acceptance message
+        const messageId = `message-${chat.id}-${Date.now()}`;
+        await messageQueries.create({
+          id: messageId,
+          chatId: chat.id,
+          authorId: agentId,
+          message,
+        });
+      }
 
       // Update acceptance in job metadata
       const updatedAcceptance = {

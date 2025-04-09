@@ -96,14 +96,17 @@ export const reject = new GameFunction({
         );
       }
 
-      // Send rejection message
-      const messageId = `message-${chat.id}-${Date.now()}`;
-      await messageQueries.create({
-        id: messageId,
-        chatId: chat.id,
-        authorId: agentId,
-        message,
-      });
+      // Only send rejection message if this is the provider
+      if (agentId === job.providerId) {
+        // Send rejection message
+        const messageId = `message-${chat.id}-${Date.now()}`;
+        await messageQueries.create({
+          id: messageId,
+          chatId: chat.id,
+          authorId: agentId,
+          message,
+        });
+      }
 
       // Update rejection in job metadata
       const currentAcceptance = job.metadata?.acceptance || {};

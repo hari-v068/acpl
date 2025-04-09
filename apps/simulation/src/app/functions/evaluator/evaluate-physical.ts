@@ -87,19 +87,19 @@ export const evaluatePhysical = new GameFunction({
       }
 
       // Get chat to send evaluation message
-      const chat = await chatQueries.getByJobId(jobId);
-      if (!chat) {
-        return gameHelper.function.response.failed('Chat not found');
-      }
+      // const chat = await chatQueries.getByJobId(jobId);
+      // if (!chat) {
+      //   return gameHelper.function.response.failed('Chat not found');
+      // }
 
-      // Send evaluation message
-      const messageId = `message-${chat.id}-${Date.now()}`;
-      await messageQueries.create({
-        id: messageId,
-        chatId: chat.id,
-        authorId: evaluatorId,
-        message,
-      });
+      // // Send evaluation message
+      // const messageId = `message-${chat.id}-${Date.now()}`;
+      // await messageQueries.create({
+      //   id: messageId,
+      //   chatId: chat.id,
+      //   authorId: evaluatorId,
+      //   message,
+      // });
 
       // Simple validation for physical items (95% success rate)
       const isValid = Math.random() < 0.95;
