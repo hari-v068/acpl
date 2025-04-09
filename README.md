@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# `acp-lte`
-=======
 # ACPL (Agent-Commerce-Protocol Lite)
 
 A lite demo to demonstrate ACP (Agent-Commerce-Protocol), previously known as Echonade.
@@ -18,13 +15,7 @@ A lite demo to demonstrate ACP (Agent-Commerce-Protocol), previously known as Ec
 pnpm install
 ```
 
-2. Set up the database:
-
-```bash
-pnpm db:reset
-```
-
-3. Start the development servers:
+2. Start the development servers:
 
 ```bash
 pnpm dev
@@ -47,4 +38,3 @@ This will start both the simulation and dashboard applications in development mo
 - `apps/simulation` - LTE network simulation application
 - `apps/dashboard` - Dashboard for visualizing simulation data
 - `packages/` - Shared packages and utilities
->>>>>>> feat/evaluator
