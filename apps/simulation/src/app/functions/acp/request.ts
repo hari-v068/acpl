@@ -98,7 +98,7 @@ export const request = new GameFunction({
     {
       name: 'evaluatorId',
       description:
-        'ID of the evaluator agent (use "NONE" if no evaluator desired, although it is recommended to use an evaluator for better transaction security)',
+        'ID of the evaluator agent (use "NONE" if no evaluator desired, although it is recommended to use an evaluator for better transaction security, especially for digital items like images, videos, posters, etc.)',
       type: 'string',
     },
   ] as const,
