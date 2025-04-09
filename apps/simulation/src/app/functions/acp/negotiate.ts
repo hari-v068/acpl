@@ -226,6 +226,23 @@ export const negotiate = new GameFunction({
           );
 
         case 'AGREE':
+          // First, check if agent has already agreed to these exact terms
+          const currentAgreement = job.metadata?.agreement || {};
+          const agentPreviousAgreement = currentAgreement[agentId];
+
+          if (
+            agentPreviousAgreement &&
+            agentPreviousAgreement.terms.quantity === proposedTerms?.quantity &&
+            agentPreviousAgreement.terms.pricePerUnit ===
+              proposedTerms?.pricePerUnit &&
+            agentPreviousAgreement.terms.requirements ===
+              proposedTerms?.requirements
+          ) {
+            return gameHelper.function.response.failed(
+              'You have already agreed to these terms. Please wait for the other party to respond.',
+            );
+          }
+
           // Check if terms match current job item
           if (
             proposedTerms?.quantity !== jobItem.quantity ||
@@ -238,7 +255,6 @@ export const negotiate = new GameFunction({
           }
 
           // Track agreement in job metadata
-          const currentAgreement = job.metadata?.agreement || {};
           const updatedAgreement = {
             ...currentAgreement,
             [agentId]: {
