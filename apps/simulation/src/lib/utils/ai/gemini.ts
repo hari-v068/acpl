@@ -1,8 +1,10 @@
+import { env } from '@acpl/config/env';
 import { google } from '@ai-sdk/google';
 import { generateObject } from 'ai';
 import { z } from 'zod';
 
 // Create the model instance
+process.env.GOOGLE_GENERATIVE_AI_API_KEY = env.GEMINI_API_KEY;
 const model = google('gemini-1.5-flash');
 
 // Define the schema for our evaluation result
