@@ -98,12 +98,23 @@ export const inventoryItemQueries = {
   },
 
   transferOwnership: async (id: string, agentId: string) => {
+<<<<<<< HEAD
     const [updated] = await db
       .update(inventoryItems)
       .set({ agentId })
       .where(eq(inventoryItems.id, id))
       .returning();
     return updated;
+=======
+    return await db.transaction(async (tx) => {
+      const [updated] = await tx
+        .update(inventoryItems)
+        .set({ agentId })
+        .where(eq(inventoryItems.id, id))
+        .returning();
+      return updated;
+    });
+>>>>>>> feat/evaluator
   },
 
   // Delete an inventory item

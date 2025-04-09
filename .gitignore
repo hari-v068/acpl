@@ -39,4 +39,4 @@ yarn-error.log*
 .vscode
 
 # project
-packages/simulation/logs/
+apps/simulation/logs/

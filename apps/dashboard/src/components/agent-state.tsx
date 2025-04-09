@@ -18,7 +18,11 @@ import {
   User,
   Wallet,
 } from 'lucide-react';
+<<<<<<< HEAD
 import { useState } from 'react';
+=======
+import { useEffect, useState } from 'react';
+>>>>>>> feat/evaluator
 
 interface AgentStateProps {
   state: AgentState | undefined;
@@ -34,6 +38,13 @@ export function AgentState({ state }: AgentStateProps) {
     jobs: false,
     chats: false,
   });
+<<<<<<< HEAD
+=======
+  const [chatMessages, setChatMessages] = useState<Record<string, any[]>>({});
+  const [expandedChats, setExpandedChats] = useState<Record<string, boolean>>(
+    {},
+  );
+>>>>>>> feat/evaluator
 
   if (!state) {
     return (
@@ -50,6 +61,40 @@ export function AgentState({ state }: AgentStateProps) {
     }));
   };
 
+<<<<<<< HEAD
+=======
+  const toggleChat = (chatId: string) => {
+    setExpandedChats((prev) => ({
+      ...prev,
+      [chatId]: !prev[chatId],
+    }));
+  };
+
+  // Fetch messages for a chat
+  const fetchMessages = async (chatId: string) => {
+    try {
+      const response = await fetch(`/api/chats/${chatId}/messages`);
+      const data = await response.json();
+      setChatMessages((prev) => ({
+        ...prev,
+        [chatId]: data.messages,
+      }));
+    } catch (error) {
+      console.error('Failed to fetch messages:', error);
+    }
+  };
+
+  // Fetch messages when chat section is expanded or when state changes
+  useEffect(() => {
+    if (expandedSections.chats && state.chats) {
+      // Fetch messages for all chats when state updates
+      state.chats.forEach((chat) => {
+        fetchMessages(chat.id);
+      });
+    }
+  }, [expandedSections.chats, state.chats]); // This will trigger when either chats section is expanded or when state changes
+
+>>>>>>> feat/evaluator
   // Format the wallet balance
   const formatBalance = (balance: string | undefined) => {
     if (!balance) return '$0.00';
@@ -361,6 +406,7 @@ export function AgentState({ state }: AgentStateProps) {
                       </span>
                     </div>
 
+<<<<<<< HEAD
                     <div className="mt-2 space-y-2 text-xs">
                       {/* First row - Essential info */}
                       <div className="grid grid-cols-3 gap-x-4">
@@ -381,10 +427,39 @@ export function AgentState({ state }: AgentStateProps) {
                               Quantity:
                             </span>
                             <span>{job.item.quantity}</span>
+=======
+                    <div className="mt-2 space-y-3 text-xs">
+                      {/* Essential info */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1.5 text-muted-foreground">
+                            <User className="h-3.5 w-3.5" />
+                            <span className="text-[11px] font-medium">
+                              Counterpart
+                            </span>
+                          </div>
+                          <div className="font-mono text-[11px] bg-muted/50 rounded px-2 py-1">
+                            {truncateAddress(job.counterpartId)}
+                          </div>
+                        </div>
+
+                        {job.item.quantity && (
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <Package className="h-3.5 w-3.5" />
+                              <span className="text-[11px] font-medium">
+                                Quantity
+                              </span>
+                            </div>
+                            <div className="text-[11px] bg-muted/50 rounded px-2 py-1">
+                              {job.item.quantity}
+                            </div>
+>>>>>>> feat/evaluator
                           </div>
                         )}
 
                         {job.item.pricePerUnit && (
+<<<<<<< HEAD
                           <div className="flex items-center gap-1">
                             <Tag className="h-3 w-3 text-muted-foreground" />
                             <span className="text-muted-foreground">
@@ -434,6 +509,62 @@ export function AgentState({ state }: AgentStateProps) {
                             </div>
                           )}
                         </div>
+=======
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <Tag className="h-3.5 w-3.5" />
+                              <span className="text-[11px] font-medium">
+                                Price
+                              </span>
+                            </div>
+                            <div className="font-mono text-[11px] bg-muted/50 rounded px-2 py-1">
+                              {formatBalance(job.item.pricePerUnit)}
+                            </div>
+                          </div>
+                        )}
+
+                        {job.item.requirements && (
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <FileText className="h-3.5 w-3.5" />
+                              <span className="text-[11px] font-medium">
+                                Requirements
+                              </span>
+                            </div>
+                            <div className="text-[11px] bg-muted/50 rounded px-2 py-1">
+                              {job.item.requirements}
+                            </div>
+                          </div>
+                        )}
+
+                        {job.budget && (
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <Wallet className="h-3.5 w-3.5" />
+                              <span className="text-[11px] font-medium">
+                                Budget
+                              </span>
+                            </div>
+                            <div className="font-mono text-[11px] bg-muted/50 rounded px-2 py-1">
+                              {formatBalance(job.budget)}
+                            </div>
+                          </div>
+                        )}
+
+                        {job.expiredAt && (
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <Clock className="h-3.5 w-3.5" />
+                              <span className="text-[11px] font-medium">
+                                Expires
+                              </span>
+                            </div>
+                            <div className="text-[11px] bg-muted/50 rounded px-2 py-1">
+                              {formatDate(job.expiredAt)}
+                            </div>
+                          </div>
+                        )}
+>>>>>>> feat/evaluator
                       </div>
                     </div>
                   </div>
@@ -484,13 +615,21 @@ export function AgentState({ state }: AgentStateProps) {
                     key={chat.id}
                     className="rounded-md bg-muted p-3 shadow-sm"
                   >
+<<<<<<< HEAD
                     <div className="flex items-center justify-between mb-2">
+=======
+                    <div
+                      className="flex items-center justify-between cursor-pointer"
+                      onClick={() => toggleChat(chat.id)}
+                    >
+>>>>>>> feat/evaluator
                       <div className="flex items-center gap-2">
                         <MessageSquare className="h-3.5 w-3.5 text-green-500" />
                         <span className="text-xs font-medium">
                           Chat with {truncateAddress(chat.counterpartId)}
                         </span>
                       </div>
+<<<<<<< HEAD
                       <span className="text-xs text-muted-foreground">
                         {formatDate(chat.createdAt)}
                       </span>
@@ -546,6 +685,81 @@ export function AgentState({ state }: AgentStateProps) {
                             </div>
                           );
                         })}
+=======
+                      <div className="flex items-center gap-2">
+                        {chat.notification.type === 'UNREAD_MESSAGES' && (
+                          <span className="text-xs px-1.5 py-0.5 rounded-full bg-red-500/10 text-red-500">
+                            unread
+                          </span>
+                        )}
+                        <span className="text-xs text-muted-foreground">
+                          {formatDate(chat.createdAt)}
+                        </span>
+                        <ArrowRight
+                          className={cn(
+                            'h-3.5 w-3.5 text-muted-foreground transition-transform',
+                            expandedChats[chat.id] ? 'rotate-90' : '',
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    {expandedChats[chat.id] && (
+                      <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                        {!chatMessages[chat.id] ||
+                        chatMessages[chat.id].length === 0 ? (
+                          <p className="text-xs text-muted-foreground text-center py-2">
+                            No messages in this conversation yet
+                          </p>
+                        ) : (
+                          <div className="space-y-2 mt-2 max-h-[300px] overflow-y-auto pr-1">
+                            {chatMessages[chat.id].map((message) => {
+                              const isFromAgent =
+                                message.authorId === state.agent?.id;
+                              return (
+                                <div
+                                  key={message.id}
+                                  className={cn(
+                                    'flex text-xs p-2 rounded-lg max-w-[85%]',
+                                    isFromAgent
+                                      ? 'bg-primary/10 ml-auto'
+                                      : 'bg-muted-foreground/10 mr-auto',
+                                  )}
+                                >
+                                  <div>
+                                    <div className="flex items-center gap-1 mb-1">
+                                      <Send
+                                        className={cn(
+                                          'h-3 w-3',
+                                          isFromAgent
+                                            ? 'text-primary'
+                                            : 'text-muted-foreground',
+                                        )}
+                                      />
+                                      <span
+                                        className={cn(
+                                          'text-[10px]',
+                                          isFromAgent
+                                            ? 'text-primary'
+                                            : 'text-muted-foreground',
+                                        )}
+                                      >
+                                        {isFromAgent ? 'Agent' : 'Counterpart'}
+                                      </span>
+                                      <span className="text-[10px] text-muted-foreground ml-auto">
+                                        {formatDate(message.createdAt)}
+                                      </span>
+                                    </div>
+                                    <p className="whitespace-pre-wrap break-words">
+                                      {message.message}
+                                    </p>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+>>>>>>> feat/evaluator
                       </div>
                     )}
                   </div>

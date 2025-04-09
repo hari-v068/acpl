@@ -9,6 +9,10 @@ export const jobQueries = {
     id: string;
     clientId: string;
     providerId: string;
+<<<<<<< HEAD
+=======
+    evaluatorId?: string | null;
+>>>>>>> feat/evaluator
     budget?: string;
     phase?: string;
     expiredAt?: Date;
@@ -118,6 +122,22 @@ export const jobQueries = {
     return updated;
   },
 
+<<<<<<< HEAD
+=======
+  // Update job escrow amount
+  updateEscrowAmount: async (
+    id: string,
+    escrowAmount: string,
+  ): Promise<Job | undefined> => {
+    const [updated] = await db
+      .update(jobs)
+      .set({ escrowAmount })
+      .where(eq(jobs.id, id))
+      .returning();
+    return updated;
+  },
+
+>>>>>>> feat/evaluator
   // Update job expiry
   updateExpiry: async (
     id: string,
@@ -131,6 +151,39 @@ export const jobQueries = {
     return updated;
   },
 
+<<<<<<< HEAD
+=======
+  // Update job metadata
+  updateMetadata: async (
+    id: string,
+    metadata: {
+      acceptance?: {
+        [agentId: string]: {
+          acceptedAt: string;
+          rejectedAt?: string;
+        };
+      };
+      agreement?: {
+        [agentId: string]: {
+          agreedAt: string;
+          terms: {
+            quantity: number;
+            pricePerUnit: string;
+            requirements: string;
+          };
+        };
+      };
+    },
+  ): Promise<Job | undefined> => {
+    const [updated] = await db
+      .update(jobs)
+      .set({ metadata })
+      .where(eq(jobs.id, id))
+      .returning();
+    return updated;
+  },
+
+>>>>>>> feat/evaluator
   // Delete a job
   delete: async (id: string): Promise<Job | undefined> => {
     const [deleted] = await db.delete(jobs).where(eq(jobs.id, id)).returning();

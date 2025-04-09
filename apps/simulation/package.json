@@ -1,0 +1,17 @@
+{
+  "name": "@acpl/simulation",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false src/index.ts",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@acpl/config": "workspace:*",
+    "@acpl/db": "workspace:*",
+    "@acpl/types": "workspace:*",
+    "@ai-sdk/google": "^1.2.2",
+    "@virtuals-protocol/game": "^0.1.11",
+    "ai": "^4.2.2",
+    "drizzle-orm": "^0.41.0"
+  }
+}

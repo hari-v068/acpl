@@ -97,15 +97,45 @@ export const jobs = pgTable(
     providerId: text('provider_id')
       .references(() => agents.id)
       .notNull(),
+<<<<<<< HEAD
+=======
+    evaluatorId: text('evaluator_id').references(() => agents.id),
+>>>>>>> feat/evaluator
     budget: decimal('budget_amount', { precision: 20, scale: 2 }),
     phase: jobPhaseEnum('job_phase').notNull().default('REQUEST'),
     expiredAt: timestamp('expired_at', { withTimezone: true }),
     transactionHash: text('transaction_hash'),
+<<<<<<< HEAD
+=======
+    escrowAmount: decimal('escrow_amount', { precision: 20, scale: 2 }),
+    metadata: jsonb('metadata').$type<{
+      acceptance?: {
+        [agentId: string]: {
+          acceptedAt: string;
+          rejectedAt?: string;
+        };
+      };
+      agreement?: {
+        [agentId: string]: {
+          agreedAt: string;
+          terms: {
+            quantity: number;
+            pricePerUnit: string;
+            requirements: string;
+          };
+        };
+      };
+    }>(),
+>>>>>>> feat/evaluator
   },
   (table) => [
     index('idx_jobs_phase').on(table.phase),
     index('idx_jobs_client_id').on(table.clientId),
     index('idx_jobs_provider_id').on(table.providerId),
+<<<<<<< HEAD
+=======
+    index('idx_jobs_evaluator_id').on(table.evaluatorId),
+>>>>>>> feat/evaluator
   ],
 );
 
@@ -146,9 +176,17 @@ export const chats = pgTable(
     providerId: text('provider_id')
       .references(() => agents.id)
       .notNull(),
+<<<<<<< HEAD
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
+=======
+    evaluatorId: text('evaluator_id').references(() => agents.id),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    lastReadBy: text('last_read_by').references(() => agents.id),
+>>>>>>> feat/evaluator
   },
   (table) => [
     index('idx_chats_job_id').on(table.jobId),
@@ -264,6 +302,14 @@ export const jobRelations = relations(jobs, ({ one }) => ({
     references: [agents.id],
     relationName: 'provider',
   }),
+<<<<<<< HEAD
+=======
+  evaluator: one(agents, {
+    fields: [jobs.evaluatorId],
+    references: [agents.id],
+    relationName: 'evaluator',
+  }),
+>>>>>>> feat/evaluator
   jobItem: one(jobItems),
   chat: one(chats, {
     fields: [jobs.id],
