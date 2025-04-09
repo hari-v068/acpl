@@ -35,6 +35,9 @@ export function AgentState({ state }: AgentStateProps) {
     chats: false,
   });
   const [chatMessages, setChatMessages] = useState<Record<string, any[]>>({});
+  const [expandedChats, setExpandedChats] = useState<Record<string, boolean>>(
+    {},
+  );
 
   if (!state) {
     return (
@@ -48,6 +51,13 @@ export function AgentState({ state }: AgentStateProps) {
     setExpandedSections((prev) => ({
       ...prev,
       [section]: !prev[section],
+    }));
+  };
+
+  const toggleChat = (chatId: string) => {
+    setExpandedChats((prev) => ({
+      ...prev,
+      [chatId]: !prev[chatId],
     }));
   };
 
@@ -509,7 +519,10 @@ export function AgentState({ state }: AgentStateProps) {
                     key={chat.id}
                     className="rounded-md bg-muted p-3 shadow-sm"
                   >
-                    <div className="flex items-center justify-between mb-2">
+                    <div
+                      className="flex items-center justify-between cursor-pointer"
+                      onClick={() => toggleChat(chat.id)}
+                    >
                       <div className="flex items-center gap-2">
                         <MessageSquare className="h-3.5 w-3.5 text-green-500" />
                         <span className="text-xs font-medium">
@@ -525,60 +538,70 @@ export function AgentState({ state }: AgentStateProps) {
                         <span className="text-xs text-muted-foreground">
                           {formatDate(chat.createdAt)}
                         </span>
+                        <ArrowRight
+                          className={cn(
+                            'h-3.5 w-3.5 text-muted-foreground transition-transform',
+                            expandedChats[chat.id] ? 'rotate-90' : '',
+                          )}
+                        />
                       </div>
                     </div>
 
-                    {!chatMessages[chat.id] ||
-                    chatMessages[chat.id].length === 0 ? (
-                      <p className="text-xs text-muted-foreground text-center py-2">
-                        No messages in this conversation yet
-                      </p>
-                    ) : (
-                      <div className="space-y-2 mt-2 max-h-60 overflow-y-auto pr-1">
-                        {chatMessages[chat.id].map((message) => {
-                          const isFromAgent =
-                            message.authorId === state.agent?.id;
-                          return (
-                            <div
-                              key={message.id}
-                              className={cn(
-                                'flex text-xs p-2 rounded-lg max-w-[85%]',
-                                isFromAgent
-                                  ? 'bg-primary/10 ml-auto'
-                                  : 'bg-muted-foreground/10 mr-auto',
-                              )}
-                            >
-                              <div>
-                                <div className="flex items-center gap-1 mb-1">
-                                  <Send
-                                    className={cn(
-                                      'h-3 w-3',
-                                      isFromAgent
-                                        ? 'text-primary'
-                                        : 'text-muted-foreground',
-                                    )}
-                                  />
-                                  <span
-                                    className={cn(
-                                      'text-[10px]',
-                                      isFromAgent
-                                        ? 'text-primary'
-                                        : 'text-muted-foreground',
-                                    )}
-                                  >
-                                    {isFromAgent ? 'Agent' : 'Counterpart'}
-                                  </span>
-                                  <span className="text-[10px] text-muted-foreground ml-auto">
-                                    {formatDate(message.createdAt)}
-                                  </span>
+                    {expandedChats[chat.id] && (
+                      <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                        {!chatMessages[chat.id] ||
+                        chatMessages[chat.id].length === 0 ? (
+                          <p className="text-xs text-muted-foreground text-center py-2">
+                            No messages in this conversation yet
+                          </p>
+                        ) : (
+                          <div className="space-y-2 mt-2 max-h-[300px] overflow-y-auto pr-1">
+                            {chatMessages[chat.id].map((message) => {
+                              const isFromAgent =
+                                message.authorId === state.agent?.id;
+                              return (
+                                <div
+                                  key={message.id}
+                                  className={cn(
+                                    'flex text-xs p-2 rounded-lg max-w-[85%]',
+                                    isFromAgent
+                                      ? 'bg-primary/10 ml-auto'
+                                      : 'bg-muted-foreground/10 mr-auto',
+                                  )}
+                                >
+                                  <div>
+                                    <div className="flex items-center gap-1 mb-1">
+                                      <Send
+                                        className={cn(
+                                          'h-3 w-3',
+                                          isFromAgent
+                                            ? 'text-primary'
+                                            : 'text-muted-foreground',
+                                        )}
+                                      />
+                                      <span
+                                        className={cn(
+                                          'text-[10px]',
+                                          isFromAgent
+                                            ? 'text-primary'
+                                            : 'text-muted-foreground',
+                                        )}
+                                      >
+                                        {isFromAgent ? 'Agent' : 'Counterpart'}
+                                      </span>
+                                      <span className="text-[10px] text-muted-foreground ml-auto">
+                                        {formatDate(message.createdAt)}
+                                      </span>
+                                    </div>
+                                    <p className="whitespace-pre-wrap break-words">
+                                      {message.message}
+                                    </p>
+                                  </div>
                                 </div>
-                                <p className="whitespace-pre-wrap break-words">
-                                  {message.message}
-                                </p>
-                              </div>
-                            </div>
-                          );
-                        })}
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

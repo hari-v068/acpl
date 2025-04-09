@@ -114,7 +114,9 @@ export function AgentCard({ agent, connected }: AgentCardProps) {
     <Card className={'h-full flex flex-col overflow-hidden'}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle>{agent.name}</CardTitle>
+          <CardTitle className="font-syne font-extrabold text-xl uppercase">
+            {agent.name}
+          </CardTitle>
 
           <div className="flex items-center gap-2">
             {/* Goal with hover card */}
