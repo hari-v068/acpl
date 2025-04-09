@@ -23,7 +23,7 @@ export const makePoster = new GameFunction({
       name: 'prompt',
       type: 'string',
       description:
-        'The prompt for the poster. Should be a visual description of the poster. For example, "A poster with a picture of a cat and the text "Buy now!"',
+        'The prompt for the poster. Should be a visual description of the poster. For example, "A poster for {something} with {something else} and {something else again}." But be specific of what you want in the poster, like what text, what object, what image, etc.',
     },
   ] as const,
   executable: async (args, _logger) => {
