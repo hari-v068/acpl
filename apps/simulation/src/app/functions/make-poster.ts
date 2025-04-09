@@ -67,6 +67,14 @@ export const makePoster = new GameFunction({
         );
       }
 
+      // Check if a poster has already been created for this job
+      const existingPoster = await itemQueries.getById(`item-poster-${jobId}`);
+      if (existingPoster) {
+        return gameHelper.function.response.failed(
+          'A poster has already been created for this job. You should deliver the existing poster.',
+        );
+      }
+
       const imageUrl = await generateMarketingImage(prompt);
 
       // Create poster item
