@@ -273,7 +273,7 @@ export const negotiate = new GameFunction({
               id: agreeMessageId,
               chatId: chat.id,
               authorId: agentId,
-              message: `${message} (Final agreement reached - proceeding to payment)`,
+              message: message,
             });
             return gameHelper.function.response.success(
               'Mutual agreement reached - proceeding to payment',
@@ -289,7 +289,7 @@ export const negotiate = new GameFunction({
             id: agreeMessageId,
             chatId: chat.id,
             authorId: agentId,
-            message: `${message} (Waiting for other party's agreement)`,
+            message: message,
           });
           return gameHelper.function.response.success(
             'Agreement recorded - waiting for other party to agree',

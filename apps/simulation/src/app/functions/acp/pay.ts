@@ -136,7 +136,7 @@ export const pay = new GameFunction({
         id: messageId,
         chatId: chat.id,
         authorId: clientId,
-        message: `${message} (Transaction Hash: ${transactionHash})`,
+        message: message,
       });
 
       // Update job with transaction hash and escrow amount
