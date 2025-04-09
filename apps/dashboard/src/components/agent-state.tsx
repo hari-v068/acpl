@@ -396,79 +396,90 @@ export function AgentState({ state }: AgentStateProps) {
                       </span>
                     </div>
 
-                    <div className="mt-2 space-y-2 text-xs">
-                      {/* First row - Essential info */}
-                      <div className="grid grid-cols-3 gap-x-4">
-                        <div className="flex items-center gap-1">
-                          <User className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-muted-foreground">
-                            Counterpart:
-                          </span>
-                          <span className="font-mono">
+                    <div className="mt-2 space-y-3 text-xs">
+                      {/* Essential info */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1.5 text-muted-foreground">
+                            <User className="h-3.5 w-3.5" />
+                            <span className="text-[11px] font-medium">
+                              Counterpart
+                            </span>
+                          </div>
+                          <div className="font-mono text-[11px] bg-muted/50 rounded px-2 py-1">
                             {truncateAddress(job.counterpartId)}
-                          </span>
+                          </div>
                         </div>
 
                         {job.item.quantity && (
-                          <div className="flex items-center gap-1">
-                            <Package className="h-3 w-3 text-muted-foreground" />
-                            <span className="text-muted-foreground">
-                              Quantity:
-                            </span>
-                            <span>{job.item.quantity}</span>
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <Package className="h-3.5 w-3.5" />
+                              <span className="text-[11px] font-medium">
+                                Quantity
+                              </span>
+                            </div>
+                            <div className="text-[11px] bg-muted/50 rounded px-2 py-1">
+                              {job.item.quantity}
+                            </div>
                           </div>
                         )}
 
                         {job.item.pricePerUnit && (
-                          <div className="flex items-center gap-1">
-                            <Tag className="h-3 w-3 text-muted-foreground" />
-                            <span className="text-muted-foreground">
-                              Price:
-                            </span>
-                            <span className="font-mono">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <Tag className="h-3.5 w-3.5" />
+                              <span className="text-[11px] font-medium">
+                                Price
+                              </span>
+                            </div>
+                            <div className="font-mono text-[11px] bg-muted/50 rounded px-2 py-1">
                               {formatBalance(job.item.pricePerUnit)}
-                            </span>
+                            </div>
                           </div>
                         )}
-                      </div>
 
-                      {/* Second row - Requirements and additional info */}
-                      <div className="grid grid-cols-1 border-t border-border/50 pt-2">
                         {job.item.requirements && (
-                          <div className="flex items-start gap-1">
-                            <FileText className="h-3 w-3 text-muted-foreground mt-0.5" />
-                            <span className="text-muted-foreground">
-                              Requirements:
-                            </span>
-                            <span className="flex-1">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <FileText className="h-3.5 w-3.5" />
+                              <span className="text-[11px] font-medium">
+                                Requirements
+                              </span>
+                            </div>
+                            <div className="text-[11px] bg-muted/50 rounded px-2 py-1">
                               {job.item.requirements}
-                            </span>
+                            </div>
                           </div>
                         )}
 
-                        <div className="flex items-center gap-4">
-                          {job.budget && (
-                            <div className="flex items-center gap-1">
-                              <Wallet className="h-3 w-3 text-muted-foreground" />
-                              <span className="text-muted-foreground">
-                                Budget:
-                              </span>
-                              <span className="font-mono">
-                                {formatBalance(job.budget)}
+                        {job.budget && (
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <Wallet className="h-3.5 w-3.5" />
+                              <span className="text-[11px] font-medium">
+                                Budget
                               </span>
                             </div>
-                          )}
+                            <div className="font-mono text-[11px] bg-muted/50 rounded px-2 py-1">
+                              {formatBalance(job.budget)}
+                            </div>
+                          </div>
+                        )}
 
-                          {job.expiredAt && (
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-3 w-3 text-muted-foreground" />
-                              <span className="text-muted-foreground">
-                                Expires:
+                        {job.expiredAt && (
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <Clock className="h-3.5 w-3.5" />
+                              <span className="text-[11px] font-medium">
+                                Expires
                               </span>
-                              <span>{formatDate(job.expiredAt)}</span>
                             </div>
-                          )}
-                        </div>
+                            <div className="text-[11px] bg-muted/50 rounded px-2 py-1">
+                              {formatDate(job.expiredAt)}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

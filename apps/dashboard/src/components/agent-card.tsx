@@ -114,7 +114,7 @@ export function AgentCard({ agent, connected }: AgentCardProps) {
     <Card className={'h-full flex flex-col overflow-hidden'}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="font-syne font-extrabold text-xl uppercase">
+          <CardTitle className="font-syne font-extrabold text-xl tracking-tighter uppercase">
             {agent.name}
           </CardTitle>
 
