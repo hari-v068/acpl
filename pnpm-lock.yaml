@@ -171,30 +171,6 @@ importers:
         specifier: ^0.30.5
         version: 0.30.5
 
-  packages/simulation:
-    dependencies:
-      '@acpl/config':
-        specifier: workspace:*
-        version: link:../config
-      '@acpl/db':
-        specifier: workspace:*
-        version: link:../db
-      '@acpl/types':
-        specifier: workspace:*
-        version: link:../types
-      '@ai-sdk/google':
-        specifier: ^1.2.2
-        version: 1.2.2(zod@3.24.2)
-      '@virtuals-protocol/game':
-        specifier: ^0.1.10
-        version: 0.1.10
-      ai:
-        specifier: ^4.2.2
-        version: 4.2.2(react@19.0.0)(zod@3.24.2)
-      drizzle-orm:
-        specifier: ^0.41.0
-        version: 0.41.0(@opentelemetry/api@1.9.0)(gel@2.0.1)(postgres@3.4.5)
-
   packages/types: {}
 
 packages:
@@ -1651,9 +1627,6 @@ packages:
     resolution: {integrity: sha512-hewo/UMGP1a7O6FG/ThcPzSJdm/WwrYDNkdGgWl6M18H6K6MSitklomWpT9MUtT5KGj++QJb06va/14QBC4pvw==}
     cpu: [x64]
     os: [win32]
-
-  '@virtuals-protocol/game@0.1.10':
-    resolution: {integrity: sha512-JoKTSfO3ujOH081diK9YRdoJBoqdSu0j1sk85ULNQKzQt86jKNcOIuNkn9r+vLG+9v5g7GvJlxQ6HPwHqToVEA==}
 
   '@virtuals-protocol/game@0.1.11':
     resolution: {integrity: sha512-3/8aQi9O5jotoJbfirQ9ZeyS7st8EmI9pKjs3HN3mHwMO0zBlWFGeFf+4Y2MB31o0dPUrQuu5kKu9Nah644Akg==}
@@ -4473,13 +4446,6 @@ snapshots:
 
   '@unrs/rspack-resolver-binding-win32-x64-msvc@1.2.2':
     optional: true
-
-  '@virtuals-protocol/game@0.1.10':
-    dependencies:
-      axios: 1.8.4
-      dotenv: 16.4.7
-    transitivePeerDependencies:
-      - debug
 
   '@virtuals-protocol/game@0.1.11':
     dependencies:

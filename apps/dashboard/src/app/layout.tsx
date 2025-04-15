@@ -30,11 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-<<<<<<< HEAD
-        className={`${geistSans.variable} ${geistMono.variable} ${syne.variable} antialiased`}
-=======
         className={`${geistSans.variable} ${geistMono.variable} ${syne.variable} font-sans antialiased`}
->>>>>>> feat/evaluator
       >
         {children}
       </body>

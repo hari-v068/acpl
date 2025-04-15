@@ -9,10 +9,7 @@ export const jobQueries = {
     id: string;
     clientId: string;
     providerId: string;
-<<<<<<< HEAD
-=======
     evaluatorId?: string | null;
->>>>>>> feat/evaluator
     budget?: string;
     phase?: string;
     expiredAt?: Date;
@@ -122,8 +119,6 @@ export const jobQueries = {
     return updated;
   },
 
-<<<<<<< HEAD
-=======
   // Update job escrow amount
   updateEscrowAmount: async (
     id: string,
@@ -137,7 +132,6 @@ export const jobQueries = {
     return updated;
   },
 
->>>>>>> feat/evaluator
   // Update job expiry
   updateExpiry: async (
     id: string,
@@ -151,8 +145,6 @@ export const jobQueries = {
     return updated;
   },
 
-<<<<<<< HEAD
-=======
   // Update job metadata
   updateMetadata: async (
     id: string,
@@ -183,7 +175,6 @@ export const jobQueries = {
     return updated;
   },
 
->>>>>>> feat/evaluator
   // Delete a job
   delete: async (id: string): Promise<Job | undefined> => {
     const [deleted] = await db.delete(jobs).where(eq(jobs.id, id)).returning();

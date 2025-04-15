@@ -9,10 +9,7 @@ export const chatQueries = {
     jobId: string;
     clientId: string;
     providerId: string;
-<<<<<<< HEAD
-=======
     evaluatorId: string | null;
->>>>>>> feat/evaluator
     summary?: string;
   }): Promise<Chat> => {
     const [chat] = await db.insert(chats).values(data).returning();
@@ -87,8 +84,6 @@ export const chatQueries = {
       .returning();
     return deleted;
   },
-<<<<<<< HEAD
-=======
 
   updateLastReadBy: async (chatId: string, agentId: string): Promise<Chat> => {
     const [updated] = await db
@@ -98,5 +93,4 @@ export const chatQueries = {
       .returning();
     return updated;
   },
->>>>>>> feat/evaluator
 };

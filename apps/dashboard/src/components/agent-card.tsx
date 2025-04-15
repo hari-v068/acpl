@@ -114,13 +114,9 @@ export function AgentCard({ agent, connected }: AgentCardProps) {
     <Card className={'h-full flex flex-col overflow-hidden'}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-<<<<<<< HEAD
-          <CardTitle>{agent.name}</CardTitle>
-=======
           <CardTitle className="font-syne font-extrabold text-xl tracking-tighter uppercase">
             {agent.name}
           </CardTitle>
->>>>>>> feat/evaluator
 
           <div className="flex items-center gap-2">
             {/* Goal with hover card */}

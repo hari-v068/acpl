@@ -34,18 +34,10 @@ export const AgentStateSchema = z.object({
       expiredAt: z.string().nullable(),
 
       item: z.object({
-<<<<<<< HEAD
-        id: z.string().optional(),
-=======
->>>>>>> feat/evaluator
         name: z.string().optional(),
         quantity: z.number().optional(),
         pricePerUnit: z.string().optional(),
         requirements: z.string().optional(),
-<<<<<<< HEAD
-        inventoryItemId: z.string().optional(),
-=======
->>>>>>> feat/evaluator
       }),
     }),
   ),
@@ -56,24 +48,11 @@ export const AgentStateSchema = z.object({
       jobId: z.string(),
       counterpartId: z.string(),
       createdAt: z.string(),
-<<<<<<< HEAD
-      messages: z
-        .array(
-          z.object({
-            id: z.string(),
-            authorId: z.string(),
-            message: z.string(),
-            createdAt: z.string(),
-          }),
-        )
-        .optional(),
-=======
       notification: z.object({
         type: z.enum(['NONE', 'UNREAD_MESSAGES']),
         message: z.string(),
       }),
       lastReadBy: z.string().optional(),
->>>>>>> feat/evaluator
     }),
   ),
 });
