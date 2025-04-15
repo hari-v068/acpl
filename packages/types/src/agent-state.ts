@@ -1,13 +1,6 @@
 import { z } from 'zod';
 
 export const AgentStateSchema = z.object({
-  agent: z.object({
-    id: z.string(),
-    name: z.string(),
-    goal: z.string(),
-    description: z.string(),
-  }),
-
   wallet: z.object({
     id: z.string(),
     balance: z.string(),

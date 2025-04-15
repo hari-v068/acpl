@@ -40,7 +40,7 @@ export function AgentCard({ agent, connected }: AgentCardProps) {
 
     for (const log of logs) {
       // Only track types we care about for the state tab
-      if (log.type === 'AGENT_STATE' || log.type === 'ACTION_STATE') {
+      if (log.type === 'ACTION_STATE') {
         const currentLatest = latestByType[log.type];
 
         if (
@@ -55,7 +55,6 @@ export function AgentCard({ agent, connected }: AgentCardProps) {
 
     /* eslint-disable */
     return {
-      agentState: latestByType['AGENT_STATE'] as any,
       actionState: latestByType['ACTION_STATE'] as any,
     };
   }, [logs]);
@@ -132,8 +131,8 @@ export function AgentCard({ agent, connected }: AgentCardProps) {
               </HoverCardTrigger>
               <HoverCardContent side="top" align="end" className="w-80 p-4">
                 <div className="space-y-2">
-                  <h4 className="text-sm font-semibold">Agent Goal</h4>
-                  <p className="text-sm">{agent.goal}</p>
+                  <h4 className="text-sm font-semibold">Goal</h4>
+                  <p className="text-xs font-mono">{agent.goal}</p>
                 </div>
               </HoverCardContent>
             </HoverCard>
@@ -151,10 +150,8 @@ export function AgentCard({ agent, connected }: AgentCardProps) {
               </HoverCardTrigger>
               <HoverCardContent side="top" align="end" className="w-80 p-4">
                 <div className="space-y-2">
-                  <h4 className="text-sm font-semibold">
-                    Character Description
-                  </h4>
-                  <div className="text-sm prose-sm max-w-none">
+                  <h4 className="text-sm font-semibold">Description</h4>
+                  <div className="text-xs font-mono max-w-none">
                     {agent.description}
                   </div>
                 </div>
@@ -182,10 +179,7 @@ export function AgentCard({ agent, connected }: AgentCardProps) {
           </TabsContent>
 
           <TabsContent value="state" className="space-y-4 pt-4">
-            {latestLogs.agentState && (
-              <AgentState state={latestLogs.agentState.data} />
-            )}
-
+            <AgentState agentId={agent.id} />
             {latestLogs.actionState && (
               <JsonViewer
                 data={latestLogs.actionState.data}

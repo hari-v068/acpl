@@ -7,9 +7,7 @@ import type { AgentState, ItemMetadata } from '@acpl/types';
 import {
   ArrowRight,
   Briefcase,
-  CheckCircle2,
   Clock,
-  Copy,
   FileText,
   MessageSquare,
   Package,
@@ -19,17 +17,15 @@ import {
   Wallet,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useAgentState } from '@/hooks/use-agent-state';
 
-interface AgentStateProps {
-  state: AgentState | undefined;
-}
-
-export function AgentState({ state }: AgentStateProps) {
-  const [copiedAddress, setCopiedAddress] = useState(false);
+export function AgentState({ agentId }: { agentId: string }) {
+  // State hooks
+  const { state, loading, error } = useAgentState(agentId);
   const [expandedSections, setExpandedSections] = useState<
     Record<string, boolean>
   >({
-    wallet: true,
+    wallet: false,
     inventory: false,
     jobs: false,
     chats: false,
@@ -39,14 +35,17 @@ export function AgentState({ state }: AgentStateProps) {
     {},
   );
 
-  if (!state) {
-    return (
-      <div className="rounded-lg border border-muted p-4 h-full">
-        <p className="text-sm text-muted-foreground">No state data available</p>
-      </div>
-    );
-  }
+  // Effect hooks
+  useEffect(() => {
+    if (expandedSections.chats && state?.chats) {
+      // Fetch messages for all chats when state updates
+      state.chats.forEach((chat) => {
+        fetchMessages(chat.id);
+      });
+    }
+  }, [expandedSections.chats, state?.chats]);
 
+  // Helper functions
   const toggleSection = (section: string) => {
     setExpandedSections((prev) => ({
       ...prev,
@@ -61,7 +60,6 @@ export function AgentState({ state }: AgentStateProps) {
     }));
   };
 
-  // Fetch messages for a chat
   const fetchMessages = async (chatId: string) => {
     try {
       const response = await fetch(`/api/chats/${chatId}/messages`);
@@ -75,15 +73,32 @@ export function AgentState({ state }: AgentStateProps) {
     }
   };
 
-  // Fetch messages when chat section is expanded or when state changes
-  useEffect(() => {
-    if (expandedSections.chats && state.chats) {
-      // Fetch messages for all chats when state updates
-      state.chats.forEach((chat) => {
-        fetchMessages(chat.id);
-      });
-    }
-  }, [expandedSections.chats, state.chats]); // This will trigger when either chats section is expanded or when state changes
+  // Loading and error states
+  if (loading) {
+    return (
+      <div className="rounded-lg border border-muted p-4 h-full">
+        <p className="text-sm text-muted-foreground">Loading state...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 h-full">
+        <p className="text-sm text-destructive">
+          Error loading state: {error.message}
+        </p>
+      </div>
+    );
+  }
+
+  if (!state) {
+    return (
+      <div className="rounded-lg border border-muted p-4 h-full">
+        <p className="text-sm text-muted-foreground">No state data available</p>
+      </div>
+    );
+  }
 
   // Format the wallet balance
   const formatBalance = (balance: string | undefined) => {
@@ -103,16 +118,6 @@ export function AgentState({ state }: AgentStateProps) {
     if (!address) return 'Unknown';
     if (address.length <= 12) return address;
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  };
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedAddress(true);
-      setTimeout(() => setCopiedAddress(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy address:', err);
-    }
   };
 
   // Get the item type from metadata if available
@@ -178,19 +183,6 @@ export function AgentState({ state }: AgentStateProps) {
                   <span className="text-xs font-mono">
                     {truncateAddress(state.wallet.address)}
                   </span>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      copyToClipboard(state.wallet.address);
-                    }}
-                    className="px-1 rounded hover:bg-muted-foreground/10"
-                  >
-                    {copiedAddress ? (
-                      <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
-                    ) : (
-                      <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                    )}
-                  </button>
                 </div>
               </div>
 
@@ -568,8 +560,7 @@ export function AgentState({ state }: AgentStateProps) {
                         ) : (
                           <div className="space-y-2 mt-2 max-h-[300px] overflow-y-auto pr-1">
                             {chatMessages[chat.id].map((message) => {
-                              const isFromAgent =
-                                message.authorId === state.agent?.id;
+                              const isFromAgent = message.authorId === agentId;
                               return (
                                 <div
                                   key={message.id}

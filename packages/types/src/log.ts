@@ -7,11 +7,6 @@ const BaseLogSchema = z.object({
   timestamp: z.string(),
 });
 
-export const AgentStateLogSchema = BaseLogSchema.extend({
-  type: z.literal('AGENT_STATE'),
-  data: AgentStateSchema,
-});
-
 export const ActionStateLogSchema = BaseLogSchema.extend({
   type: z.literal('ACTION_STATE'),
   data: ActionStateSchema,
@@ -49,7 +44,6 @@ export const NoActionsLogSchema = BaseLogSchema.extend({
 });
 
 export const LogSchema = z.discriminatedUnion('type', [
-  AgentStateLogSchema,
   ActionStateLogSchema,
   FunctionLogSchema,
   FunctionStatusLogSchema,

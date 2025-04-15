@@ -5,7 +5,6 @@ import { database } from '@/lib/config/firebase';
 import { off, onValue, ref } from 'firebase/database';
 
 interface AgentStatus {
-  agent_state?: { data: any; timestamp: string };
   action_state?: { data: any; timestamp: string };
   function_execution?: { data: any; timestamp: string };
   function_status?: { data: any; timestamp: string };

@@ -43,17 +43,6 @@ export async function writeAgentStateToFile(filePath: string, state: unknown) {
 
 export function parseLog(message: string): Log | null {
   try {
-    /* "Agent State: {"id":"123"}"
-       substring('Agent State: '.length) -> {"id":"123"}
-       Just removes the prefix to get pure JSON */
-    if (message.startsWith('Agent State: ')) {
-      const data = JSON.parse(message.substring('Agent State: '.length));
-      return {
-        type: 'AGENT_STATE',
-        data: AgentStateSchema.parse(data),
-      } as Log;
-    }
-
     /* "Action State: {"data":123}."
        substring('Action State: '.length) -> {"data":123}.
        replace(/\.$/, '') -> {"data":123}
