@@ -12,7 +12,6 @@ import { JsonViewer } from '@/components/ui/json-viewer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLogs } from '@/hooks/use-logs';
 import type { Agent } from '@acpl/db/types';
-import type { Log } from '@acpl/types';
 import { AlertCircle, FileText, RefreshCw, Target } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -29,33 +28,19 @@ export function AgentCard({ agent, connected }: AgentCardProps) {
   // Only get latest logs of certain types for the state tab
   const latestLogs = useMemo(() => {
     if (!logs || logs.length === 0) {
-      return {
-        agentState: undefined,
-        actionState: undefined,
-      };
+      return { actionState: undefined };
     }
 
-    // Find the latest of each type we need for the state tab
-    const latestByType: Record<string, Log> = {};
+    // Find the latest ACTION_STATE log
+    const latestActionState = logs
+      .filter((log) => log.type === 'ACTION_STATE')
+      .sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+      )[0];
 
-    for (const log of logs) {
-      // Only track types we care about for the state tab
-      if (log.type === 'ACTION_STATE') {
-        const currentLatest = latestByType[log.type];
-
-        if (
-          !currentLatest ||
-          new Date(log.timestamp).getTime() >
-            new Date(currentLatest.timestamp).getTime()
-        ) {
-          latestByType[log.type] = log;
-        }
-      }
-    }
-
-    /* eslint-disable */
     return {
-      actionState: latestByType['ACTION_STATE'] as any,
+      actionState: latestActionState,
     };
   }, [logs]);
 
