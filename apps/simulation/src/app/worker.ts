@@ -21,38 +21,43 @@ import type { WorkerConfigs } from '@/lib/types';
 export const workerConfigs: WorkerConfigs = {
   lemoWorker: {
     id: 'lemo_worker',
-    name: "Lemo's Lemonade Crafting",
-    description: 'Handles lemonade crafting.',
+    name: 'Lemo Worker',
+    description:
+      'Handles lemonade business operations: creating lemonade products from lemons and generating revenue through selling business advice.',
     functions: [makeLemonade, sellAdvice],
   },
   zestieWorker: {
     id: 'zestie_worker',
-    name: "Zestie's Lemon Harvesting",
-    description: 'Handles lemon harvesting.',
+    name: 'Zestie Worker',
+    description:
+      'Handles lemon production operations: harvesting fresh lemons from the farm and managing inventory to supply premium quality citrus to the marketplace.',
     functions: [harvestLemons],
   },
   pixieWorker: {
     id: 'pixie_worker',
-    name: "Pixie's Digital Design Studio",
-    description: 'Handles poster creation.',
+    name: 'Pixie Worker',
+    description:
+      'Handles digital design operations: creating professional marketing posters based on client requirements and visual prompts for business promotion.',
     functions: [makePoster],
   },
   lexieWorker: {
     id: 'lexie_worker',
-    name: "Lexie's Legal Services",
-    description: 'Handles business permit creation.',
+    name: 'Lexie Worker',
+    description:
+      'Handles business compliance operations: creating official business permits and legal documentation to ensure regulatory compliance for business operations.',
     functions: [makePermit],
   },
   evaluatorWorker: {
     id: 'evaluator_worker',
-    name: 'Evaluator',
-    description: 'Evaluates the quality of the work done by the agents',
+    name: 'Evaluator Worker',
+    description:
+      'Handles quality assessment of marketplace deliverables: evaluating digital content (posters), official documents (permits), and physical items (lemons, lemonade) against requirements.',
     functions: [evaluatePoster, evaluateDocument, evaluatePhysical],
   },
   acpWorker: {
     id: 'acp_worker',
     name: 'ACP (Agent-Commerce-Protocol) Worker',
-    description: 'Worker for agent-commerce related functions',
+    description: `Handles marketplace interactions between agents: finding providers, requesting services, negotiating deals, processing transactions, and coordinating deliveries.`,
     functions: [find, request, negotiate, accept, reject, pay, deliver, read],
   },
 } as const;
