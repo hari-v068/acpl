@@ -48,6 +48,9 @@ importers:
       '@acpl/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@acpl/simulation':
+        specifier: workspace:*
+        version: link:../simulation
       '@acpl/types':
         specifier: workspace:*
         version: link:../../packages/types
